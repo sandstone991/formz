@@ -1,0 +1,8 @@
+
+.nx/installation
+.nx/cache
+node_modules
+
+
+
+.nx/workspace-data

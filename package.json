@@ -1,0 +1,25 @@
+{
+  "name": "formz",
+  "version": "1.0.0",
+  "description": "",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nx/eslint": "19.3.2",
+    "@nx/jest": "19.3.2",
+    "@nx/nest": "19.3.2",
+    "@nx/nuxt": "19.3.2",
+    "@nx/vite": "19.3.2",
+    "eslint": "~8.57.0",
+    "nuxt": "^3.10.0",
+    "nx": "19.3.2"
+  }
+}
