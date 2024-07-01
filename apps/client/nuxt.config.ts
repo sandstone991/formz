@@ -1,3 +1,4 @@
+import { defineNuxtConfig } from 'nuxt/config'
 import { pwa } from './config/pwa'
 import { appDescription } from './constants/index'
 
@@ -26,7 +27,7 @@ export default defineNuxtConfig({
   colorMode: {
     classSuffix: '',
   },
-
+  buildDir: '../../dist/apps/client',
   nitro: {
     esbuild: {
       options: {
