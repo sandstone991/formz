@@ -27,7 +27,6 @@ export default defineNuxtConfig({
   colorMode: {
     classSuffix: '',
   },
-  buildDir: '../../dist/apps/client',
   nitro: {
     esbuild: {
       options: {
