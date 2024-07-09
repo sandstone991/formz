@@ -1,17 +1,27 @@
-import { defineNuxtConfig } from 'nuxt/config'
-import { pwa } from './config/pwa'
-import { appDescription } from './constants/index'
+import { pwa } from './config/pwa';
+import { appDescription } from './constants/index';
 
 export default defineNuxtConfig({
   modules: [
     '@vueuse/nuxt',
-    '@unocss/nuxt',
     '@pinia/nuxt',
     '@nuxtjs/color-mode',
     '@vite-pwa/nuxt',
     '@nuxt/eslint',
+    '@nuxtjs/tailwindcss',
+    'shadcn-nuxt',
   ],
-
+  shadcn: {
+    /**
+     * Prefix for all the imported component
+     */
+    prefix: '',
+    /**
+     * Directory that the component lives in.
+     * @default "./components/ui"
+     */
+    componentDir: './components/ui',
+  },
   experimental: {
     // when using generate, payload js assets included in sw precache manifest
     // but missing on offline, disabling extraction it until fixed
@@ -20,12 +30,13 @@ export default defineNuxtConfig({
     typedPages: true,
   },
 
-  css: [
-    '@unocss/reset/tailwind.css',
-  ],
-
   colorMode: {
     classSuffix: '',
+  },
+  tailwindcss: {
+    configPath: 'tailwind.config.js',
+    cssPath: ['~/assets/css/tailwind.css', { injectPosition: 'first' }],
+
   },
   nitro: {
     esbuild: {
@@ -39,7 +50,6 @@ export default defineNuxtConfig({
       ignore: ['/hi'],
     },
   },
-
   app: {
     head: {
       viewport: 'width=device-width,initial-scale=1',
@@ -64,14 +74,10 @@ export default defineNuxtConfig({
     enabled: true,
   },
 
-  features: {
-    // For UnoCSS
-    inlineStyles: false,
-  },
-
   eslint: {
     config: {
       standalone: false,
     },
   },
-})
+
+});

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { appName } from '~/constants'
+import { appName } from '~/constants';
 
 useHead({
   title: appName,
-})
+});
 </script>
 
 <template>
@@ -17,7 +17,7 @@ useHead({
 html,
 body,
 #__nuxt {
-  height: 100vh;
+  height: 100%;
   margin: 0;
   padding: 0;
 }

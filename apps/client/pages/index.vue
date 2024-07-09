@@ -1,22 +1,13 @@
 <script setup lang="ts">
-const online = useOnline()
+import BaseEditor from '../editor/prosemirror/BaseEditor.vue';
 </script>
 
 <template>
-  <div>
-    <Logos mb-6 />
+  <div class="w-full h-full">
     <Suspense>
       <ClientOnly>
-        <PageView v-if="online" />
-        <div v-else text-gray:80>
-          You're offline
-        </div>
+        <BaseEditor />
       </ClientOnly>
-      <template #fallback>
-        <div italic op50>
-          <span animate-pulse>Loading...</span>
-        </div>
-      </template>
     </Suspense>
     <InputEntry />
   </div>
