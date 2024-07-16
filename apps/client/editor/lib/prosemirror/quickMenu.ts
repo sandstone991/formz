@@ -1,5 +1,5 @@
 import type { EditorState, PluginView } from 'prosemirror-state';
-import { Plugin } from 'prosemirror-state';
+import { Plugin, TextSelection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
 import { computePosition, flip, offset, shift } from '@floating-ui/dom';
 import { forEach, keys } from 'lodash-es';
@@ -7,10 +7,17 @@ import { type BlockTypes, blocksRegistry } from '../blocksRegistry';
 
 export const QUICK_MENU_PLUGIN_KEY = 'quickMenu';
 
-class QuickMenuViewPlugin implements PluginView {
+class _QuickMenuView {
   dom: HTMLElement;
   readonly id = QUICK_MENU_PLUGIN_KEY;
-  selectedIndex = 0;
+  selectedIndex = ref(0);
+  disposable = [watch(this.selectedIndex, (cur, prev) => {
+    const prevSelected = this.dom.children[prev] as HTMLLIElement;
+    prevSelected.classList.remove('bg-gray-300');
+    const selected = this.dom.children[cur] as HTMLLIElement;
+    selected.classList.add('bg-gray-300');
+  })];
+
   constructor(public view: EditorView) {
     this.dom = document.createElement('ul');
     this.dom.id = this.id;
@@ -39,76 +46,58 @@ class QuickMenuViewPlugin implements PluginView {
       }
       this.dom.appendChild(button);
     });
-    this.dom.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const { state, dispatch } = this.view;
-        const pos = state.selection.head;
-        const tr = state.tr.delete(pos - 1, pos);
-        const selected = this.dom.children[this.selectedIndex] as HTMLLIElement;
-        const nodeType = selected.id as BlockTypes;
-        const block = blocksRegistry[nodeType];
-        const node = state.schema.nodes[block.nodeType].create();
-        tr.insert(pos, node);
-        dispatch(tr);
-        this.close();
-        return;
-      }
-      if (e.key === 'Escape') {
-        this.view.focus();
-        this.close();
-        return;
-      }
-      const prevSelected = this.dom.children[this.selectedIndex] as HTMLLIElement;
-      prevSelected.classList.remove(selectedClass);
-      if (e.key === 'ArrowDown') {
-        this.selectedIndex++;
-        if (this.selectedIndex >= keys(blocksRegistry).length)
-          this.selectedIndex = 0;
-      }
-      else if (e.key === 'ArrowUp') {
-        this.selectedIndex--;
-        if (this.selectedIndex < 0)
-          this.selectedIndex = keys(blocksRegistry).length - 1;
-      }
-      const selected = this.dom.children[this.selectedIndex] as HTMLLIElement;
-      selected.focus();
-      selected.classList.add(selectedClass);
-    });
   }
 
   close() {
     this.dom.style.display = 'none';
   }
 
-  update(view: EditorView, prevState: EditorState) {
-    const currentState = view.state;
-    if (prevState.doc.eq(currentState.doc))
-      return;
-    // check type of update because we only want to trigger the quick menu on new character insertion
-    // not on deletion and selection change
-    if (currentState.doc.textContent.length <= prevState.doc.textContent.length)
-      return;
-
-    // check last charachter
-    const pos = currentState.selection.head;
-    const node = currentState.doc.nodeAt(pos - 1);
-    const text = node?.text || '';
-    const lastChar = text[text.length - 1];
-    if (lastChar !== '/') {
-      this.close();
-      return;
-    }
+  open() {
     this.dom.style.display = 'block';
-    const pixelPos = view.coordsAtPos(pos);
+  }
+
+  insertBlock(nodeType: BlockTypes) {
+    const { state, dispatch } = this.view;
+    const pos = state.selection.head;
+    const tr = state.tr.delete(pos - 1, pos);
+    const block = blocksRegistry[nodeType];
+    const node = state.schema.nodes[block.nodeType].create();
+    tr.insert(pos, node);
+
+    // move selection to the end of the block
+    tr.setSelection(TextSelection.near(tr.doc.resolve(pos + node.nodeSize)));
+    dispatch(tr);
+    this.close();
+  }
+
+  handleArrowUp() {
+    this.selectedIndex.value--;
+    if (this.selectedIndex.value < 0)
+      this.selectedIndex.value = keys(blocksRegistry).length - 1;
+  }
+
+  handleArrowDown() {
+    this.selectedIndex.value++;
+    if (this.selectedIndex.value >= keys(blocksRegistry).length)
+      this.selectedIndex.value = 0;
+  }
+
+  updatePos({
+    top = 0,
+    left = 0,
+  }: {
+    top: number
+    left: number
+  }) {
     const virtualEl = {
       getBoundingClientRect() {
         return {
-          top: pixelPos.top,
-          left: pixelPos.left,
-          right: pixelPos.left,
-          bottom: pixelPos.top,
-          x: pixelPos.left,
-          y: pixelPos.top,
+          top,
+          left,
+          right: left,
+          bottom: top,
+          x: left,
+          y: top,
           width: 0,
           height: 0,
         };
@@ -116,26 +105,121 @@ class QuickMenuViewPlugin implements PluginView {
     };
     computePosition(virtualEl, this.dom, {
       middleware: [offset({
-        mainAxis: 15,
-        crossAxis: 15,
+        mainAxis: 20,
+        crossAxis: 20,
       }), flip(), shift()],
     }).then(({ x, y }) => {
       Object.assign(this.dom.style, {
         top: `${y}px`,
         left: `${x}px`,
       });
-      this.dom.focus();
     });
-  };
+  }
+
+  update() {}
+  // update(view: EditorView, prevState: EditorState) {
+  //   const currentState = view.state;
+  //   if (prevState.doc.eq(currentState.doc))
+  //     return;
+  //   // check type of update because we only want to trigger the quick menu on new character insertion
+  //   // not on deletion and selection change
+  //   if (currentState.doc.textContent.length <= prevState.doc.textContent.length)
+  //     return;
+
+  //   // check last charachter
+  //   const pos = currentState.selection.head;
+  //   const node = currentState.doc.nodeAt(pos - 1);
+  //   const text = node?.text || '';
+  //   const lastChar = text[text.length - 1];
+  //   if (lastChar !== '/') {
+  //     this.close();
+  //     return;
+  //   }
+  //   this.dom.style.display = 'block';
+  //   const pixelPos = view.coordsAtPos(pos);
+  //   const virtualEl = {
+  //     getBoundingClientRect() {
+  //       return {
+  //         top: pixelPos.top,
+  //         left: pixelPos.left,
+  //         right: pixelPos.left,
+  //         bottom: pixelPos.top,
+  //         x: pixelPos.left,
+  //         y: pixelPos.top,
+  //         width: 0,
+  //         height: 0,
+  //       };
+  //     },
+  //   };
+  //   computePosition(virtualEl, this.dom, {
+  //     middleware: [offset({
+  //       mainAxis: 15,
+  //       crossAxis: 15,
+  //     }), flip(), shift()],
+  //   }).then(({ x, y }) => {
+  //     Object.assign(this.dom.style, {
+  //       top: `${y}px`,
+  //       left: `${x}px`,
+  //     });
+  //     this.dom.focus();
+  //   });
+  // };
 
   destroy() {
     this.dom.remove();
+    this.disposable.forEach(d => d());
   }
 }
 
+class QuickMenuView {
+  static instance: _QuickMenuView;
+  static init(view: EditorView) {
+    QuickMenuView.instance = new _QuickMenuView(view);
+    return QuickMenuView.instance;
+  }
+
+  get instance() {
+    return QuickMenuView.instance;
+  }
+}
 export const qucikMenuPlugin = new Plugin({
   view(view) {
-    return new QuickMenuViewPlugin(view);
+    return QuickMenuView.init(view);
   },
 
+  props: {
+    handleKeyDown(view, event) {
+      const { key } = event;
+      if (key === 'Escape') {
+        QuickMenuView.instance.close();
+        return true;
+      }
+      if (key === 'ArrowDown') {
+        QuickMenuView.instance.handleArrowDown();
+        return true;
+      }
+      if (key === 'ArrowUp') {
+        QuickMenuView.instance.handleArrowUp();
+        return true;
+      }
+      if (key === 'Enter') {
+        const selected = QuickMenuView.instance.dom.children[QuickMenuView.instance.selectedIndex.value] as HTMLLIElement;
+        const nodeType = selected.id as BlockTypes;
+        QuickMenuView.instance.insertBlock(nodeType);
+        // we want to be able to insert a new line after the block
+        return true;
+      }
+      return;
+    },
+    handleTextInput(view, _, to, text) {
+      if (text === '/') {
+        QuickMenuView.instance.open();
+        const pixelPos = view.coordsAtPos(to);
+        QuickMenuView.instance.updatePos({
+          left: pixelPos.left,
+          top: pixelPos.top,
+        });
+      }
+    },
+  },
 });

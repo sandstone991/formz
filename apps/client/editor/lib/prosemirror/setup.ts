@@ -14,12 +14,12 @@ export function baseSetup({
   userKeymap,
 }: { schema: Schema, userKeymap?: { [key: string]: string | false } }): Plugin[] {
   const plugins = [
+    qucikMenuPlugin,
     keymap(buildKeymap(schema, userKeymap)),
     keymap(baseKeymap),
     dropCursor(),
     gapCursor(),
     history(),
-    qucikMenuPlugin,
   ];
   return plugins;
 }

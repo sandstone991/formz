@@ -88,7 +88,7 @@ export function buildKeymap(schema: Schema, mapKeys?: { [key: string]: false | s
       bind('Ctrl-Enter', cmd);
   }
   if (type = schema.nodes.list_item) {
-    bind('Enter', splitListItem(type));
+    // bind('Enter', splitListItem(type));
     bind('Mod-[', liftListItem(type));
     bind('Mod-]', sinkListItem(type));
   }
