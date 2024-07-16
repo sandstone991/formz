@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseEditor from '../editor/prosemirror/BaseEditor.vue';
+import BaseEditor from '../editor/lib/prosemirror/BaseEditor.vue';
 </script>
 
 <template>

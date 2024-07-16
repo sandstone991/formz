@@ -12,5 +12,6 @@ export default nuxt(
     'ts/consistent-type-definitions': 'off',
     'style/semi': ['error'],
     'eslint-comments/no-unlimited-disable': 'off',
+    'no-useless-return': 'off',
   }),
 );

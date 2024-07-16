@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     'shadcn-nuxt',
   ],
+
   shadcn: {
     /**
      * Prefix for all the imported component
@@ -22,6 +23,7 @@ export default defineNuxtConfig({
      */
     componentDir: './components/ui',
   },
+
   experimental: {
     // when using generate, payload js assets included in sw precache manifest
     // but missing on offline, disabling extraction it until fixed
@@ -33,11 +35,13 @@ export default defineNuxtConfig({
   colorMode: {
     classSuffix: '',
   },
+
   tailwindcss: {
     configPath: 'tailwind.config.js',
     cssPath: ['~/assets/css/tailwind.css', { injectPosition: 'first' }],
 
   },
+
   nitro: {
     esbuild: {
       options: {
@@ -50,6 +54,7 @@ export default defineNuxtConfig({
       ignore: ['/hi'],
     },
   },
+
   app: {
     head: {
       viewport: 'width=device-width,initial-scale=1',
@@ -80,4 +85,5 @@ export default defineNuxtConfig({
     },
   },
 
+  compatibilityDate: '2024-07-16',
 });

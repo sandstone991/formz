@@ -6,6 +6,8 @@ import { dropCursor } from 'prosemirror-dropcursor';
 import { gapCursor } from 'prosemirror-gapcursor';
 import type { Schema } from 'prosemirror-model';
 import { buildKeymap } from './keymap';
+import { qucikMenuPlugin } from './quickMenu';
+import 'prosemirror-view/style/prosemirror.css';
 
 export function baseSetup({
   schema,
@@ -17,6 +19,7 @@ export function baseSetup({
     dropCursor(),
     gapCursor(),
     history(),
+    qucikMenuPlugin,
   ];
   return plugins;
 }

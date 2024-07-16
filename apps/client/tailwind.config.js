@@ -1,11 +1,12 @@
 const animate = require('tailwindcss-animate');
+const { addDynamicIconSelectors } = require('@iconify/tailwind');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ['class'],
   safelist: ['dark'],
   prefix: '',
-  content: ['./**/*.vue'],
+  content: ['./**/*.vue', './editor/prosemirror/*.ts'],
   theme: {
     container: {
       center: true,
@@ -82,5 +83,7 @@ module.exports = {
       },
     },
   },
-  plugins: [animate],
+  plugins: [animate, addDynamicIconSelectors({
+    prefix: "icon"
+  })],
 };
