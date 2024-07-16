@@ -6,7 +6,7 @@ module.exports = {
   darkMode: ['class'],
   safelist: ['dark'],
   prefix: '',
-  content: ['./**/*.vue', './editor/prosemirror/*.ts'],
+  content: ['./**/*.vue', './editor/lib/prosemirror/**/*.ts'],
   theme: {
     container: {
       center: true,
@@ -84,6 +84,6 @@ module.exports = {
     },
   },
   plugins: [animate, addDynamicIconSelectors({
-    prefix: "icon"
+    prefix: 'icon',
   })],
 };

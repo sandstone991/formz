@@ -27,7 +27,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div id="content" ref="editorRef" class="w-full h-full min-h-full border text-start"/>
+  <div id="editor" ref="editorRef" class="w-full h-full min-h-full border text-start"/>
 </template>
 
 <style>
