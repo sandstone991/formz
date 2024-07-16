@@ -84,6 +84,11 @@ class QuickMenuViewPlugin implements PluginView {
     const currentState = view.state;
     if (prevState.doc.eq(currentState.doc))
       return;
+    // check type of update because we only want to trigger the quick menu on new character insertion
+    // not on deletion and selection change
+    if (currentState.doc.textContent.length <= prevState.doc.textContent.length)
+      return;
+
     // check last charachter
     const pos = currentState.selection.head;
     const node = currentState.doc.nodeAt(pos - 1);
