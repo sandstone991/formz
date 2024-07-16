@@ -44,6 +44,10 @@ class _QuickMenuView {
         button.classList.add(selectedClass);
         first = false;
       }
+      button.addEventListener('click', () => {
+        this.insertBlock(block.nodeType as BlockTypes);
+        this.view.focus();
+      });
       this.dom.appendChild(button);
     });
   }
@@ -116,55 +120,6 @@ class _QuickMenuView {
     });
   }
 
-  update() {}
-  // update(view: EditorView, prevState: EditorState) {
-  //   const currentState = view.state;
-  //   if (prevState.doc.eq(currentState.doc))
-  //     return;
-  //   // check type of update because we only want to trigger the quick menu on new character insertion
-  //   // not on deletion and selection change
-  //   if (currentState.doc.textContent.length <= prevState.doc.textContent.length)
-  //     return;
-
-  //   // check last charachter
-  //   const pos = currentState.selection.head;
-  //   const node = currentState.doc.nodeAt(pos - 1);
-  //   const text = node?.text || '';
-  //   const lastChar = text[text.length - 1];
-  //   if (lastChar !== '/') {
-  //     this.close();
-  //     return;
-  //   }
-  //   this.dom.style.display = 'block';
-  //   const pixelPos = view.coordsAtPos(pos);
-  //   const virtualEl = {
-  //     getBoundingClientRect() {
-  //       return {
-  //         top: pixelPos.top,
-  //         left: pixelPos.left,
-  //         right: pixelPos.left,
-  //         bottom: pixelPos.top,
-  //         x: pixelPos.left,
-  //         y: pixelPos.top,
-  //         width: 0,
-  //         height: 0,
-  //       };
-  //     },
-  //   };
-  //   computePosition(virtualEl, this.dom, {
-  //     middleware: [offset({
-  //       mainAxis: 15,
-  //       crossAxis: 15,
-  //     }), flip(), shift()],
-  //   }).then(({ x, y }) => {
-  //     Object.assign(this.dom.style, {
-  //       top: `${y}px`,
-  //       left: `${x}px`,
-  //     });
-  //     this.dom.focus();
-  //   });
-  // };
-
   destroy() {
     this.dom.remove();
     this.disposable.forEach(d => d());
@@ -221,5 +176,6 @@ export const qucikMenuPlugin = new Plugin({
         });
       }
     },
+
   },
 });
