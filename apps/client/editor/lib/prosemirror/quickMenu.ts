@@ -3,20 +3,20 @@ import { Plugin, TextSelection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
 import { computePosition, flip, offset, shift } from '@floating-ui/dom';
 import { forEach, keys } from 'lodash-es';
+import { search } from 'fast-fuzzy';
 import { type BlockTypes, blocksRegistry } from '../blocksRegistry';
 
 export const QUICK_MENU_PLUGIN_KEY = 'quickMenu';
+const selectedClass = 'bg-gray-300';
 
-class _QuickMenuView {
+class _QuickMenu {
   dom: HTMLElement;
   readonly id = QUICK_MENU_PLUGIN_KEY;
   selectedIndex = ref(0);
-  disposable = [watch(this.selectedIndex, (cur, prev) => {
-    const prevSelected = this.dom.children[prev] as HTMLLIElement;
-    prevSelected.classList.remove('bg-gray-300');
-    const selected = this.dom.children[cur] as HTMLLIElement;
-    selected.classList.add('bg-gray-300');
-  })];
+  searchText = ref('');
+  lastSlashPos = -1;
+  isOpen = false;
+  disposable = [watch(this.selectedIndex, (cur, prev) => this.switchActiveClass(cur, prev)), watch(this.searchText, () => this.generateMenu())];
 
   constructor(public view: EditorView) {
     this.dom = document.createElement('ul');
@@ -25,7 +25,6 @@ class _QuickMenuView {
     this.dom.style.display = 'none';
     this.dom.tabIndex = 0;
     this.dom.role = 'menu';
-    const selectedClass = 'bg-gray-300';
     document.body.appendChild(this.dom);
     let first = true;
     forEach(blocksRegistry, (block) => {
@@ -52,11 +51,58 @@ class _QuickMenuView {
     });
   }
 
+  switchActiveClass(cur: number, prev: number) {
+    const prevSelected = this.dom.children[prev] as HTMLLIElement;
+    prevSelected.classList.remove('bg-gray-300');
+    const selected = this.dom.children[cur] as HTMLLIElement;
+    selected.classList.add('bg-gray-300');
+  }
+
+  generateMenu() {
+    // clear the menu
+    this.dom.innerHTML = '';
+    let first = true;
+    const blockKeys = keys(blocksRegistry);
+    const filteredBlocks = this.searchText.value
+      ? search(this.searchText.value, blockKeys, {
+        ignoreCase: true,
+      })
+      : keys(blocksRegistry);
+    forEach(filteredBlocks, (key) => {
+      const block = blocksRegistry[key as BlockTypes];
+      const button = document.createElement('li');
+      button.id = block.nodeType;
+      // set text of button
+      const textSpan = document.createElement('span');
+      textSpan.textContent = block.title;
+      // set icon of button
+      const icon = document.createElement('span');
+      icon.className = block.icon;
+      button.appendChild(icon);
+      button.appendChild(textSpan);
+      button.className = 'flex items-center gap-2 cursor-pointer hover:bg-gray-300 p-2';
+      if (first) {
+        button.classList.add(selectedClass);
+        first = false;
+      }
+      button.addEventListener('click', () => {
+        this.insertBlock(block.nodeType as BlockTypes);
+        this.view.focus();
+      });
+      this.dom.appendChild(button);
+    });
+  }
+
   close() {
+    this.isOpen = false;
+    this.selectedIndex.value = 0;
+    this.searchText.value = '';
+    this.lastSlashPos = -1;
     this.dom.style.display = 'none';
   }
 
   open() {
+    this.isOpen = true;
     this.dom.style.display = 'block';
   }
 
@@ -126,51 +172,64 @@ class _QuickMenuView {
   }
 }
 
-class QuickMenuView {
-  static instance: _QuickMenuView;
+class QuickMenu {
+  static instance: _QuickMenu;
   static init(view: EditorView) {
-    QuickMenuView.instance = new _QuickMenuView(view);
-    return QuickMenuView.instance;
+    QuickMenu.instance = new _QuickMenu(view);
+    return QuickMenu.instance;
   }
 
   get instance() {
-    return QuickMenuView.instance;
+    return QuickMenu.instance;
   }
 }
 export const qucikMenuPlugin = new Plugin({
   view(view) {
-    return QuickMenuView.init(view);
+    return QuickMenu.init(view);
   },
 
   props: {
     handleKeyDown(view, event) {
       const { key } = event;
+      if (key === 'Backspace') {
+        QuickMenu.instance.searchText.value = QuickMenu.instance.searchText.value.slice(0, -1);
+        if (view.state.selection.head - 1 === QuickMenu.instance.lastSlashPos) {
+          QuickMenu.instance.close();
+        }
+      }
       if (key === 'Escape') {
-        QuickMenuView.instance.close();
+        QuickMenu.instance.close();
         return true;
       }
       if (key === 'ArrowDown') {
-        QuickMenuView.instance.handleArrowDown();
+        QuickMenu.instance.handleArrowDown();
         return true;
       }
       if (key === 'ArrowUp') {
-        QuickMenuView.instance.handleArrowUp();
+        QuickMenu.instance.handleArrowUp();
         return true;
       }
       if (key === 'Enter') {
-        const selected = QuickMenuView.instance.dom.children[QuickMenuView.instance.selectedIndex.value] as HTMLLIElement;
+        const selected = QuickMenu.instance.dom.children[QuickMenu.instance.selectedIndex.value] as HTMLLIElement;
         const nodeType = selected.id as BlockTypes;
-        QuickMenuView.instance.insertBlock(nodeType);
+        QuickMenu.instance.insertBlock(nodeType);
         // we want to be able to insert a new line after the block
         return true;
       }
       return;
     },
+
     handleTextInput(view, _, to, text) {
-      if (text === '/') {
-        QuickMenuView.instance.open();
+      if (QuickMenu.instance.isOpen) {
+        const from = QuickMenu.instance.lastSlashPos;
+        const searchTextSlice = view.state.doc.textBetween(from + 1, to) + text;
+        QuickMenu.instance.searchText.value = searchTextSlice;
+      }
+      else if (text === '/') {
+        QuickMenu.instance.lastSlashPos = to;
+        QuickMenu.instance.open();
         const pixelPos = view.coordsAtPos(to);
-        QuickMenuView.instance.updatePos({
+        QuickMenu.instance.updatePos({
           left: pixelPos.left,
           top: pixelPos.top,
         });

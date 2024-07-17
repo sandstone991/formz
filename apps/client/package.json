@@ -19,6 +19,7 @@
     "@vueuse/core": "^10.11.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "fast-fuzzy": "^1.12.0",
     "lodash-es": "^4.17.21",
     "lucide-vue-next": "^0.400.0",
     "prosemirror-example-setup": "^1.2.2",
