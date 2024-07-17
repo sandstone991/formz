@@ -109,13 +109,17 @@ class _QuickMenu {
   insertBlock(nodeType: BlockTypes) {
     const { state, dispatch } = this.view;
     const pos = state.selection.head;
-    const tr = state.tr.delete(pos - 1, pos);
+    const tr = state.tr.delete(this.lastSlashPos, pos);
+    const lastStep = tr.steps[tr.steps.length - 1];
+    const stepMap = lastStep.getMap();
+    const posToInsertAfterDeletion = stepMap.map(pos);
     const block = blocksRegistry[nodeType];
     const node = state.schema.nodes[block.nodeType].create();
-    tr.insert(pos, node);
+
+    tr.insert(posToInsertAfterDeletion, node);
 
     // move selection to the end of the block
-    tr.setSelection(TextSelection.near(tr.doc.resolve(pos + node.nodeSize)));
+    tr.setSelection(TextSelection.near(tr.doc.resolve(posToInsertAfterDeletion + node.nodeSize)));
     dispatch(tr);
     this.close();
   }
@@ -210,7 +214,13 @@ export const qucikMenuPlugin = new Plugin({
         return true;
       }
       if (key === 'Enter') {
+        if (!QuickMenu.instance.isOpen)
+          return;
         const selected = QuickMenu.instance.dom.children[QuickMenu.instance.selectedIndex.value] as HTMLLIElement;
+        if (!selected) {
+          QuickMenu.instance.close();
+          return;
+        }
         const nodeType = selected.id as BlockTypes;
         QuickMenu.instance.insertBlock(nodeType);
         // we want to be able to insert a new line after the block
