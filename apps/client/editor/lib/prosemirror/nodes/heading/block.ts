@@ -1,6 +1,6 @@
-import type { QuickMenuBlock } from './interface';
+import type { QuickMenuBlock } from '~/editor/lib/interace';
 
-export const heading: QuickMenuBlock = {
+export const headingBlock: QuickMenuBlock = {
   nodeType: 'heading',
   title: 'Heading 1',
   icon: 'icon-[lucide--heading-1]',

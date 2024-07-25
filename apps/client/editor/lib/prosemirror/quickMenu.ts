@@ -1,10 +1,10 @@
-import type { EditorState, PluginView } from 'prosemirror-state';
-import { Plugin, TextSelection } from 'prosemirror-state';
-import type { EditorView } from 'prosemirror-view';
 import { computePosition, flip, offset, shift } from '@floating-ui/dom';
 import { forEach, keys } from 'lodash-es';
 import { search } from 'fast-fuzzy';
-import { type BlockTypes, blocksRegistry } from '../blocksRegistry';
+import { Extension } from '@tiptap/vue-3';
+import type { EditorView } from '@tiptap/pm/view';
+import { Plugin, TextSelection } from '@tiptap/pm/state';
+import { type BlockTypes, blocksRegistry } from './nodes';
 
 export const QUICK_MENU_PLUGIN_KEY = 'quickMenu';
 const selectedClass = 'bg-gray-300';
@@ -200,33 +200,41 @@ export const qucikMenuPlugin = new Plugin({
         if (view.state.selection.head - 1 === QuickMenu.instance.lastSlashPos) {
           QuickMenu.instance.close();
         }
+        return false;
       }
       if (key === 'Escape') {
+        if (!QuickMenu.instance.isOpen)
+          return false;
         QuickMenu.instance.close();
         return true;
       }
       if (key === 'ArrowDown') {
+        if (!QuickMenu.instance.isOpen)
+          return false;
         QuickMenu.instance.handleArrowDown();
         return true;
       }
       if (key === 'ArrowUp') {
+        if (!QuickMenu.instance.isOpen)
+          return false;
         QuickMenu.instance.handleArrowUp();
         return true;
       }
+
       if (key === 'Enter') {
         if (!QuickMenu.instance.isOpen)
-          return;
+          return false;
         const selected = QuickMenu.instance.dom.children[QuickMenu.instance.selectedIndex.value] as HTMLLIElement;
         if (!selected) {
           QuickMenu.instance.close();
-          return;
+          return true;
         }
         const nodeType = selected.id as BlockTypes;
         QuickMenu.instance.insertBlock(nodeType);
         // we want to be able to insert a new line after the block
         return true;
       }
-      return;
+      return false;
     },
 
     handleTextInput(view, _, to, text) {
@@ -246,5 +254,12 @@ export const qucikMenuPlugin = new Plugin({
       }
     },
 
+  },
+});
+
+export const QuickMenuExtension = Extension.create({
+  name: 'quickMenu',
+  addProseMirrorPlugins() {
+    return [qucikMenuPlugin];
   },
 });

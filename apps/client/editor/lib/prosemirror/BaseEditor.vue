@@ -1,39 +1,41 @@
 <script setup lang="ts">
-import { EditorState } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
-import { Schema } from 'prosemirror-model';
-import { schema } from 'prosemirror-schema-basic';
-import { addListNodes } from 'prosemirror-schema-list';
-import { baseSetup } from './setup';
+import { EditorContent, useEditor } from '@tiptap/vue-3';
+import StarterKit from '@tiptap/starter-kit';
+import { QuickMenuExtension } from './quickMenu';
+import { formzProsemirrorNodes } from './nodes';
 
-const props = defineProps<{ state?: EditorState, schema?: Schema, className?: string }>();
-const editorSchema = props.schema ?? new Schema({
-  nodes: addListNodes(schema.spec.nodes as any, 'paragraph block*', 'block'),
-  marks: schema.spec.marks,
-});
-const editorRef = ref<HTMLDivElement | null>(null);
-const view = ref<EditorView | null>(null);
-onMounted(() => {
-  view.value = new EditorView(editorRef.value!, {
-    state: props.state ?? EditorState.create({
-      schema: editorSchema,
-      plugins: baseSetup({ schema: editorSchema   }),
+const editor = useEditor({
+  content: `
+    <h2>
+      Welcome to the Base Editor
+    </h2>
+    <p>
+      This is a simple editor with a custom menu.
+    </p>
+  `,
+  extensions: [
+    QuickMenuExtension,
+    StarterKit.configure({
+      heading: false,
+
     }),
-  });
-});
-onBeforeUnmount(() => {
-  view.value?.destroy();
+    ...formzProsemirrorNodes,
+  ],
 });
 </script>
 
 <template>
-  <div id="editor" ref="editorRef" class="w-full h-full min-h-full border text-start"/>
+  <EditorContent :editor="editor" />
 </template>
 
 <style>
-  .ProseMirror{
-    padding: 10px;
-    height: 100%;
-    outline: none;
-  }
+  .ProseMirror {
+  padding: 10px;
+  height: 100%;
+  outline: none;
+  text-align: start;
+}
+:has(.ProseMirror) {
+  height: 100%;
+}
 </style>
