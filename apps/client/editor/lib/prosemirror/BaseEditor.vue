@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
+import { Dnd } from '../extensions/dnd';
 import { QuickMenuExtension } from './quickMenu';
 import { formzProsemirrorNodes } from './nodes';
+import { editorDependecyKey } from './provide';
 
 const editor = useEditor({
   content: `
@@ -17,15 +19,20 @@ const editor = useEditor({
     QuickMenuExtension,
     StarterKit.configure({
       heading: false,
-
+      paragraph: false,
+      dropcursor: false,
     }),
     ...formzProsemirrorNodes,
+    Dnd,
   ],
 });
+provide(editorDependecyKey, editor);
 </script>
 
 <template>
-  <EditorContent :editor="editor" />
+  <div class="w-full h-full">
+    <EditorContent :editor="editor" />
+  </div>
 </template>
 
 <style>
@@ -34,6 +41,7 @@ const editor = useEditor({
   height: 100%;
   outline: none;
   text-align: start;
+  padding: 40px;
 }
 :has(.ProseMirror) {
   height: 100%;

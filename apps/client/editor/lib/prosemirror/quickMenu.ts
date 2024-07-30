@@ -193,6 +193,7 @@ export const qucikMenuPlugin = new Plugin({
   },
 
   props: {
+
     handleKeyDown(view, event) {
       const { key } = event;
       if (key === 'Backspace') {
@@ -217,8 +218,18 @@ export const qucikMenuPlugin = new Plugin({
       if (key === 'ArrowUp') {
         if (!QuickMenu.instance.isOpen)
           return false;
+        console.log('arrow up');
         QuickMenu.instance.handleArrowUp();
         return true;
+      }
+      if (key === 'ArrowLeft') {
+        if (!QuickMenu.instance.isOpen)
+          return false;
+        const isBehindSlash = view.state.selection.head - 1 === QuickMenu.instance.lastSlashPos;
+        if (isBehindSlash) {
+          QuickMenu.instance.close();
+          return false;
+        }
       }
 
       if (key === 'Enter') {

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { NodeViewContent, NodeViewWrapper, isNodeEmpty, nodeViewProps } from '@tiptap/vue-3';
+import { NodeViewContent, isNodeEmpty, nodeViewProps } from '@tiptap/vue-3';
+import FormzNodeViewWrapper from '../FormzNodeViewWrapper.vue';
 
 const props = defineProps(nodeViewProps);
-const isEmpty = ref(true);
+const isEmpty = ref(isNodeEmpty(props.node));
 const node = props.node;
 const level = node.attrs.level;
 onUpdated(() => {
@@ -11,13 +12,13 @@ onUpdated(() => {
 </script>
 
 <template>
-  <NodeViewWrapper>
+  <FormzNodeViewWrapper>
     <NodeViewContent
       :data-placeholder="props.node.attrs.placeholder || 'Heading'" :as="`h${level}`" :class="{
         placeholder: isEmpty,
       }"
     />
-  </NodeViewWrapper>
+  </FormzNodeViewWrapper>
 </template>
 
 <style scoped>
