@@ -14,6 +14,7 @@ import { clamp } from 'lodash-es';
 import { Column } from './Column';
 import { ColumnBlock } from './ColumnBlock';
 import { buildColumn, buildColumnBlock } from './utils';
+import { DeleteColumnWhenEmpty } from './DeleteColumnWhenEmpty';
 
 const uniqueKey = Symbol('closestEdge');
 const registery = new Set<Element>();
@@ -221,13 +222,15 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
             const columnBlock = buildColumnBlock({
               content: [overNodeColumns, newColumn],
             });
-            console.log(columnBlock);
             const newNode = this.editor.state.doc.type.schema.nodeFromJSON(columnBlock);
             if (newNode === null) {
               return;
             }
             const tr = this.editor.state.tr;
-            tr.insert(overStartPos, newNode);
+            tr.deleteRange(draggedStartPos, draggedEndPos);
+            tr.deleteRange(tr.mapping.map(overStartPos), tr.mapping.map(overEndPos));
+            const newOverStartPos = tr.mapping.map(overStartPos);
+            tr.insert(newOverStartPos, newNode);
             this.editor.view.dispatch(tr);
           }
         }
@@ -268,7 +271,7 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
     };
   },
   addExtensions() {
-    return [Column, ColumnBlock];
+    return [Column, ColumnBlock, DeleteColumnWhenEmpty];
   },
 });
 
@@ -281,6 +284,9 @@ function recurse(node: NodePos, fn: (node: NodePos) => void) {
 function attachDragListeners(node: NodePos) {
   const dom = node.element;
   const dragHandle = dom.parentElement!.querySelector('[data-drag-handle]') ?? undefined;
+  const dragEnabled = node.node.type.spec.draggable;
+  if (!dragEnabled)
+    return;
   const dispose = combine(
     draggable({
       element: dom.parentElement!,
@@ -288,7 +294,7 @@ function attachDragListeners(node: NodePos) {
         pos: node.pos,
       }),
       dragHandle,
-      canDrag: () => !!node.node.type.spec.draggable,
+
       onDragStart: () => {
         Dnd.storage.draggingState.value = {
           type: 'dragging',

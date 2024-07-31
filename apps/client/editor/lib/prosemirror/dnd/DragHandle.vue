@@ -5,7 +5,7 @@
 
 </script>
 <template>
-    <div  contenteditable="false" class="absolute left-[-80px] top-1 flex flex-row gap-2 justify-between items-center px-4 bg-transparent" :class="{
+    <div  contenteditable="false" class="absolute z-10 overflow-visible left-[-80px] top-1 flex flex-row gap-2 justify-between items-center px-4 bg-transparent" :class="{
         'opacity-0': !isHovered,
         'opacity-100': isHovered
     }">

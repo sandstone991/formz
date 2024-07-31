@@ -2,10 +2,12 @@ import { Node, mergeAttributes } from '@tiptap/core';
 import type { CommandProps } from '@tiptap/core';
 import type { NodeType, Node as ProseMirrorNode } from 'prosemirror-model';
 import { NodeSelection } from 'prosemirror-state';
+import { VueNodeViewRenderer } from '@tiptap/vue-3';
 
+import ColumnBlockComponent from './ColumnBlock.vue';
 import { Column } from './Column';
 import { ColumnSelection } from './ColumnSelection';
-import { buildColumn, buildColumnBlock, buildNColumns, findParentNodeClosestToPos } from './utils';
+import { buildColumn, buildColumnBlock, buildNColumns, findParentNodeClosestToPos, removeColumnAtTransform } from './utils';
 import type { Predicate } from './utils';
 
 declare module '@tiptap/core' {
@@ -14,6 +16,8 @@ declare module '@tiptap/core' {
       setColumns: (columns: number) => ReturnType
       insertColumns: (columns: number) => ReturnType
       unsetColumns: () => ReturnType
+      removeColumn: () => ReturnType
+      removeColumnAt: (pos: number) => ReturnType
     }
   }
 }
@@ -41,29 +45,30 @@ export const ColumnBlock = Node.create<ColumnBlockOptions>({
     const attrs = mergeAttributes(HTMLAttributes, { class: 'column-block' });
     return ['div', attrs, 0];
   },
-  addAttributes() {
-    return {
-      'draggable': {
-        default: false,
-        parseHTML: (element) => {
-          return { draggable: element.getAttribute('draggable') };
-        },
-        renderHTML: (attributes) => {
-          return { draggable: attributes.draggable };
-        },
-      },
-      'data-drop-target-for-element': {
-        default: 'false',
-        parseHTML: (element) => {
-          return { 'data-drop-target-for-element': element.getAttribute('data-drop-target-for-element') };
-        },
-        renderHTML: (attributes) => {
-          return { 'data-drop-target-for-element': attributes['data-drop-target-for-element'] };
-        },
-      },
-    };
+  addNodeView() {
+    return VueNodeViewRenderer(ColumnBlockComponent);
   },
+
   addCommands() {
+    const removeColumnAt = (pos: number) => ({ tr, dispatch }: CommandProps) => {
+      try {
+        if (!dispatch) {
+          return;
+        }
+        return dispatch(removeColumnAtTransform({
+          tr,
+          pos,
+          editor: this.editor,
+        }));
+      }
+      catch (error) {
+        console.error(error);
+      }
+    };
+    const removeColumn = () => ({ tr, chain }: CommandProps) => {
+      const pos = tr.selection.$from.pos;
+      return chain().removeColumnAt(pos).run();
+    };
     const unsetColumns
       = () =>
         ({ tr, dispatch }: CommandProps) => {
@@ -71,7 +76,6 @@ export const ColumnBlock = Node.create<ColumnBlockOptions>({
             if (!dispatch) {
               return;
             }
-
             // find the first ancestor
             const pos = tr.selection.$from;
             const where: Predicate = ({ node }) => {
@@ -175,6 +179,8 @@ export const ColumnBlock = Node.create<ColumnBlockOptions>({
     return {
       unsetColumns,
       setColumns,
+      removeColumn,
+      removeColumnAt,
     };
   },
 });

@@ -9,8 +9,7 @@
 
 .ProseMirror .column {
   overflow: auto;
-  border: 1px gray dashed;
-  border-radius: 8px;
+
   padding: 8px;
   margin: -8px;
 }

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { NodeViewWrapper } from '@tiptap/vue-3';
 
-import DragHandle from '../../extensions/dnd/DragHandle.vue';
-import DropIndicator from '../../extensions/dnd/DropIndicator.vue';
+import DragHandle from '../dnd/DragHandle.vue';
+import DropIndicator from '../dnd/DropIndicator.vue';
 import { editorDependecyKey } from '../provide';
-import type { DndExtensionStorage } from '../../extensions/dnd';
+import type { DndExtensionStorage } from '../dnd';
 import { invoke } from '@vueuse/core';
 
 const props = withDefaults(defineProps<{

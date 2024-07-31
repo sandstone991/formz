@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
-import { Dnd } from '../extensions/dnd';
+import { Dnd } from './dnd';
 import { QuickMenuExtension } from './quickMenu';
 import { formzProsemirrorNodes } from './nodes';
 import { editorDependecyKey } from './provide';
