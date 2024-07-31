@@ -100,15 +100,16 @@ export function removeColumnAtTransform({ tr, editor, pos }: { tr: Transaction, 
   // find index of the column to remove from pos
   let index = -1;
   columns.forEach((child, i) => {
-    if (resPos.pos >= child.pos && resPos.pos <= child.pos + child.node.nodeSize) {
+    if (resPos.pos > child.pos && resPos.pos <= child.pos + child.node.nodeSize) {
       index = i;
     }
   });
   const columnsFiltered = columns.filter((_, i) => i !== index);
   if (columnsFiltered.length === 1) {
-    const childrenSlice = columnsFiltered[0].node.content;
+    const childrenSlice = columnsFiltered[0].node.content.toJSON();
     tr = tr.delete(columnBlock.start, columnBlock.start + columnBlock.node.nodeSize);
-    tr = insertContent({ editor, tr, value: childrenSlice.toJSON() });
+
+    tr = insertContent({ editor, tr, value: childrenSlice });
     return tr;
   }
   const newColumnBlock = buildColumnBlock({ content: columnsFiltered.map(c => c.node.toJSON()) });
