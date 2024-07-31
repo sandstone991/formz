@@ -1,5 +1,5 @@
 import type { Editor, JSONContent } from '@tiptap/core';
-import type { Transaction } from '@tiptap/pm/state';
+import { NodeSelection, type Transaction } from '@tiptap/pm/state';
 import type { Node, ResolvedPos } from 'prosemirror-model';
 import { deleteNode } from '../transfroms/deleteNode';
 import { insertContent } from '../transfroms/insertContent';
@@ -107,8 +107,9 @@ export function removeColumnAtTransform({ tr, editor, pos }: { tr: Transaction, 
   const columnsFiltered = columns.filter((_, i) => i !== index);
   if (columnsFiltered.length === 1) {
     const childrenSlice = columnsFiltered[0].node.content.toJSON();
-    tr = tr.delete(columnBlock.start, columnBlock.start + columnBlock.node.nodeSize);
-
+    const sel = new NodeSelection(tr.doc.resolve(columnBlock.pos));
+    tr = tr.setSelection(sel);
+    tr = tr.deleteSelection();
     tr = insertContent({ editor, tr, value: childrenSlice });
     return tr;
   }

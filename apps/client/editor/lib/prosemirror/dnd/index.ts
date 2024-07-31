@@ -143,6 +143,8 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
             closestElement = element;
           }
         }
+        if (args.source.element === closestElement?.parentElement)
+          return { pos: -1, [uniqueKey]: null };
         if (closestElement) {
           const pos = this.editor.view.posAtDOM(closestElement, 0);
           if (pos > -1) {
@@ -161,14 +163,20 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
       onDrag: ({ self }) => {
         const closestEdge = extractClosestEdge(self.data);
         const startPos = self.data.pos as number;
-        const node = this.editor.state.doc.nodeAt(startPos - 1);
-        if (node) {
-          const endPos = startPos - 1 + node.nodeSize;
-          this.storage.overNode.value = {
-            start: startPos - 1,
-            end: endPos,
-          };
+        if (startPos === -1) {
+          return;
         }
+        const node = this.editor.$pos(startPos);
+        if (!node)
+          return;
+        if (node.parent?.node.type.name === Column.type)
+          return;
+        const endPos = startPos - 1 + node.node.nodeSize;
+        this.storage.overNode.value = {
+          start: startPos - 1,
+          end: endPos,
+        };
+
         this.storage.closestEdge.value = closestEdge;
       },
       onDragLeave: () => {
@@ -176,7 +184,8 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
         this.storage.overNode.value = null;
       },
       onDrop: () => {
-        // to appeal to the type checker
+        if (this.storage.closestEdge.value === null || this.storage.overNode.value === null)
+          return;
         if (['top', 'bottom'].includes(this.storage.closestEdge.value!)) {
           // slice the node at the position
           const startPos = this.storage.lastDraggedNodePos.value!.start;
