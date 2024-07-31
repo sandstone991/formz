@@ -8,8 +8,6 @@
 }
 
 .ProseMirror .column {
-  overflow: auto;
-
   padding: 8px;
   margin: -8px;
 }

@@ -177,7 +177,6 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
       },
       onDrop: () => {
         // to appeal to the type checker
-
         if (['top', 'bottom'].includes(this.storage.closestEdge.value!)) {
           // slice the node at the position
           const startPos = this.storage.lastDraggedNodePos.value!.start;

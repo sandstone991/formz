@@ -33,7 +33,7 @@ export const ColumnBlock = Node.create<ColumnBlockOptions>({
   content: 'column{2,}',
   isolating: true,
   selectable: true,
-  draggable: true,
+  draggable: false,
   addOptions() {
     return {
       nestedColumns: false,
