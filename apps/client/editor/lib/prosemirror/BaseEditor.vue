@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { EditorContent, useEditor } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
 import { Dnd } from './dnd';
 import { QuickMenuExtension } from './quickMenu';
 import { formzProsemirrorNodes } from './nodes';
-import { editorDependecyKey } from './provide';
+import { editorDependecyKey, isProductionDependecyKey } from './provide';
+import { EditorContent, useEditor } from '@tiptap/vue-3';
 
 const editor = useEditor({
   content: `
@@ -21,18 +21,30 @@ const editor = useEditor({
       heading: false,
       paragraph: false,
       dropcursor: false,
+
     }),
     ...formzProsemirrorNodes,
     Dnd,
+
   ],
 });
 provide(editorDependecyKey, editor);
+const isProduction = ref(false);
+provide(isProductionDependecyKey, isProduction);
 </script>
 
 <template>
   <div class="w-full h-full">
+    <button @click="editor?.setEditable(false);
+      isProduction = true">preview</button>
+    <button @click="editor?.setEditable(true);
+      isProduction = false
+    ">edit</button>
     <EditorContent :editor="editor" />
   </div>
+  <pre class="text-start">{{ 
+  editor?.getJSON()
+  }}</pre>
 </template>
 
 <style>

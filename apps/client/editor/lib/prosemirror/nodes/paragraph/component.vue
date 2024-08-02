@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type EditorEvents, NodeViewContent, isNodeEmpty, nodeViewProps } from '@tiptap/vue-3';
 import FormzNodeViewWrapper from '../FormzNodeViewWrapper.vue';
+import { editorDependecyKey } from '../../provide';
 
 const props = defineProps(nodeViewProps);
 const isEmpty = ref(isNodeEmpty(props.node));

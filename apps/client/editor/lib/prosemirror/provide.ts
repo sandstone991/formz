@@ -3,4 +3,6 @@ import type { InjectionKey } from 'vue';
 
 // eslint-disable-next-line
 const editorDependecyKey = Symbol() as InjectionKey<ReturnType<typeof useEditor>>;
-export { editorDependecyKey };
+// eslint-disable-next-line
+const isProductionDependecyKey = Symbol() as InjectionKey<Ref<boolean>>;
+export { editorDependecyKey, isProductionDependecyKey };

@@ -9,7 +9,7 @@ import {
 import type {
   Edge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
-import { clamp } from 'lodash-es';
+import { clamp, debounce } from 'lodash-es';
 import { insertContentAt } from '../transfroms/insertContentAt';
 import { Column } from './Column';
 import { ColumnBlock } from './ColumnBlock';
@@ -131,6 +131,10 @@ function rectDistance(point: Position, rect: Rect): number {
   }
 }
 
+const updateListeners = debounce((node: NodePos) => {
+  detachDragListeners();
+  recurse(node, attachDragListeners);
+}, 100);
 /**
  * @note This extension disables the default drag and drop behavior of the editor
  */
@@ -306,10 +310,8 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
       },
     });
   },
-
   onUpdate() {
-    detachDragListeners();
-    recurse(this.editor.$doc, attachDragListeners);
+    updateListeners(this.editor.$doc);
   },
   addStorage() {
     return {
@@ -373,6 +375,7 @@ function attachDragListeners(node: NodePos) {
 
 function detachDragListeners() {
   Dnd.storage.disposables.forEach(dispose => dispose());
+  Dnd.storage.disposables = [];
 }
 
 export type DraggingState =

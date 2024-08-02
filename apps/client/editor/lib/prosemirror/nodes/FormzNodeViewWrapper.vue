@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { NodeViewWrapper } from '@tiptap/vue-3';
 
 import DragHandle from '../dnd/DragHandle.vue';
 import DropIndicator from '../dnd/DropIndicator.vue';
-import { editorDependecyKey } from '../provide';
+import { editorDependecyKey, isProductionDependecyKey } from '../provide';
 import type { DndExtensionStorage } from '../dnd';
 import { invoke } from '@vueuse/core';
+import { Primitive, type AsTag } from 'radix-vue';
 
 const props = withDefaults(defineProps<{
-    as?: string,
+    as?: string | globalThis.Component | AsTag ,
     dragEnabled?: boolean,
 }>(), {
     as: 'div',
@@ -17,6 +17,7 @@ const props = withDefaults(defineProps<{
 const nodeViewRef = ref<HTMLElement | null>(null);
 const isHovered = ref(false);
 const editor = inject(editorDependecyKey);
+const isProduction = inject(isProductionDependecyKey);
 const dndStorage = editor?.value?.storage.dnd as DndExtensionStorage
 const callback = ()=>{
   if(!editor?.value) return null
@@ -47,7 +48,7 @@ const isDragOver = computed(() => {
 </script>
 
 <template>
-  <NodeViewWrapper 
+  <Primitive 
     :ref="(v)=>{
       if(!v) return
       // @ts-expect-error 
@@ -58,12 +59,13 @@ const isDragOver = computed(() => {
         isHovered = true;
     }"
     @mouseleave="isHovered = false"
+    data-node-view-wrapper=""
      class="relative" >
-    <DragHandle v-if="dragEnabled" :is-hovered="isHovered" />
-    <DropIndicator v-if="dndStorage.closestEdge.value &&isDragOver" :edge="dndStorage?.closestEdge.value!"  
+    <DragHandle v-if="dragEnabled && !isProduction" :is-hovered="isHovered" />
+    <DropIndicator v-if="dndStorage.closestEdge.value &&isDragOver && !isProduction" :edge="dndStorage?.closestEdge.value!"  
     :gap="['left', 'right'].findIndex((e)=>e === dndStorage.closestEdge.value) !== -1? 10 : .8"  />
     <slot />
-  </NodeViewWrapper>
+  </Primitive>
 </template>
 
 <style scoped>
