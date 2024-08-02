@@ -9,8 +9,10 @@ import { invoke } from '@vueuse/core';
 
 const props = withDefaults(defineProps<{
     as?: string,
+    dragEnabled?: boolean,
 }>(), {
     as: 'div',
+    dragEnabled: true,
 });
 const nodeViewRef = ref<HTMLElement | null>(null);
 const isHovered = ref(false);
@@ -57,7 +59,7 @@ const isDragOver = computed(() => {
     }"
     @mouseleave="isHovered = false"
      class="relative" >
-    <DragHandle :is-hovered="isHovered" />
+    <DragHandle v-if="dragEnabled" :is-hovered="isHovered" />
     <DropIndicator v-if="dndStorage.closestEdge.value &&isDragOver" :edge="dndStorage?.closestEdge.value!"  
     :gap="['left', 'right'].findIndex((e)=>e === dndStorage.closestEdge.value) !== -1? 10 : .8"  />
     <slot />

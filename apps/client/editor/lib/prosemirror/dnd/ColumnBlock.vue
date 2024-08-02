@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import {  NodeViewContent, nodeViewProps, NodeViewWrapper } from '@tiptap/vue-3';
+import {  NodeViewContent, nodeViewProps } from '@tiptap/vue-3';
+import FormzNodeViewWrapper from '../nodes/FormzNodeViewWrapper.vue';
 
 defineProps(nodeViewProps);
 
 </script>
 
 <template>
-  <NodeViewWrapper  >
+  <FormzNodeViewWrapper :drag-enabled="false" data-column-block>    
     <NodeViewContent class="column-block"/>
-  </NodeViewWrapper>
+  </FormzNodeViewWrapper>
 </template>
 
 <style scoped>

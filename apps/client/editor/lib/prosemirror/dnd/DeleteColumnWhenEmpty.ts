@@ -13,6 +13,7 @@ export const DeleteColumnWhenEmpty = Extension.create({
           changedDescendants(oldState.doc, newState.doc, 0, (node, pos) => {
             if (node.type.name !== 'column')
               return;
+
             if (node.childCount === 0) {
               changed = true;
               tr = removeColumnAtTransform({

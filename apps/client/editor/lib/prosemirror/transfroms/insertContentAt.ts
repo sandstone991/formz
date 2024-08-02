@@ -33,7 +33,7 @@ export type InsertContentAtOptions = {
    */
   errorOnInvalidContent?: boolean
 };
-export function insertContentAt({ position, value, options = {}, editor, tr }: { position: number | Range, value: Content, options: InsertContentAtOptions, editor: Editor, tr: Transaction }) {
+export function insertContentAt({ position, value, options = {}, editor, tr }: { position: number | Range, value: Content, options?: InsertContentAtOptions, editor: Editor, tr: Transaction }) {
   options = {
     parseOptions: {},
     updateSelection: true,

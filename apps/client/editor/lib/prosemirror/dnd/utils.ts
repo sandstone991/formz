@@ -92,7 +92,7 @@ export function removeColumnAtTransform({ tr, editor, pos }: { tr: Transaction, 
   const columns: { node: Node, pos: number }[] = [];
   columnBlock.node.descendants((node, pos) => {
     if (node.type.name === 'column') {
-      columns.push({ node, pos });
+      columns.push({ node, pos: pos + columnBlock.pos });
       return false;
     }
     return true;
@@ -104,6 +104,7 @@ export function removeColumnAtTransform({ tr, editor, pos }: { tr: Transaction, 
       index = i;
     }
   });
+
   const columnsFiltered = columns.filter((_, i) => i !== index);
   if (columnsFiltered.length === 1) {
     const childrenSlice = columnsFiltered[0].node.content.toJSON();
@@ -113,13 +114,16 @@ export function removeColumnAtTransform({ tr, editor, pos }: { tr: Transaction, 
     tr = insertContent({ editor, tr, value: childrenSlice });
     return tr;
   }
-  const newColumnBlock = buildColumnBlock({ content: columnsFiltered.map(c => c.node.toJSON()) });
-  const newNode = tr.doc.type.schema.nodeFromJSON(newColumnBlock);
-  if (newNode === null) {
+  else {
+    const childrenSlice = columnsFiltered.map(({ node }) => node.toJSON());
+    const sel = new NodeSelection(tr.doc.resolve(columnBlock.pos));
+    tr = tr.setSelection(sel);
+    tr = tr.deleteSelection();
+    const newColumnBlock = buildColumnBlock({ content: childrenSlice });
+    const newColumnBlockNode = editor.state.doc.type.schema.nodeFromJSON(newColumnBlock);
+    tr = tr.insert(columnBlock.pos, newColumnBlockNode);
     return tr;
   }
-  tr = tr.replaceWith(columnBlock.start, columnBlock.start + columnBlock.node.nodeSize, newNode);
-  return tr;
 }
 
 export function removeColumnTransform({ tr, editor }: { tr: Transaction, editor: Editor }) {

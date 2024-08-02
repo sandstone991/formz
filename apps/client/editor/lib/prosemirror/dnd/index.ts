@@ -2,7 +2,6 @@ import type { NodePos } from '@tiptap/core';
 import { Extension } from '@tiptap/core';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import type { Input, Position } from '@atlaskit/pragmatic-drag-and-drop/types';
-import './index.css';
 import {
   draggable,
   dropTargetForElements,
@@ -11,6 +10,7 @@ import type {
   Edge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import { clamp } from 'lodash-es';
+import { insertContentAt } from '../transfroms/insertContentAt';
 import { Column } from './Column';
 import { ColumnBlock } from './ColumnBlock';
 import { buildColumn, buildColumnBlock } from './utils';
@@ -99,19 +99,36 @@ export function extractClosestEdge(userData: Record<string | symbol, unknown>): 
 
 type Rect = { x: number, y: number, width: number, height: number };
 
-export function rectDistance(point: Position, rect: Rect) {
-  const left = rect.x;
-  const top = rect.y;
-  const right = rect.x + rect.width;
-  const bottom = rect.y + rect.height;
+function rectDistance(point: Position, rect: Rect): number {
+  const px = point.x;
+  const py = point.y;
+  const rx1 = rect.x;
+  const ry1 = rect.y;
+  const rx2 = rect.x + rect.width;
+  const ry2 = rect.y + rect.height;
 
-  const nearestX = clamp(point.x, left, right);
-  const nearestY = clamp(point.y, top, bottom);
+  // Calculate distances to the sides of the rectangle
+  const leftDist = Math.abs(px - rx1);
+  const rightDist = Math.abs(px - rx2);
+  const bottomDist = Math.abs(py - ry1);
+  const topDist = Math.abs(py - ry2);
 
-  const dx = point.x - nearestX;
-  const dy = point.y - nearestY;
+  if (px >= rx1 && px <= rx2 && py >= ry1 && py <= ry2) {
+    // Point is inside the rectangle, calculate the minimum distance to an edge
+    return Math.min(leftDist, rightDist, bottomDist, topDist);
+  }
+  else {
+    // Point is outside the rectangle, calculate distance to the closest point on the rectangle
+    const closestX = Math.max(rx1, Math.min(px, rx2));
+    const closestY = Math.max(ry1, Math.min(py, ry2));
 
-  return Math.sqrt(dx * dx + dy * dy);
+    // Calculate the distance from the point to the closest point on the rectangle
+    const distanceX = px - closestX;
+    const distanceY = py - closestY;
+
+    // Use Pythagorean theorem to calculate the distance
+    return Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+  }
 }
 
 /**
@@ -162,15 +179,31 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
       },
       onDrag: ({ self }) => {
         const closestEdge = extractClosestEdge(self.data);
-        const startPos = self.data.pos as number;
+        let startPos = self.data.pos as number;
         if (startPos === -1) {
           return;
         }
-        const node = this.editor.$pos(startPos);
+        let node = this.editor.$pos(startPos);
         if (!node)
           return;
-        if (node.parent?.node.type.name === Column.type)
-          return;
+
+        if (closestEdge && ['left', 'right'].includes(closestEdge)) {
+          if (node.parent?.node.type.name === 'column') {
+            startPos = node.parent.pos;
+            node = node.parent;
+          }
+          else if (node.node.type.name === 'columnBlock') {
+            if (closestEdge === 'left') {
+              startPos = node.firstChild!.pos;
+              node = node.firstChild!;
+            }
+            else {
+              startPos = node.lastChild!.pos;
+              node = node.lastChild!;
+            }
+          }
+        }
+
         const endPos = startPos - 1 + node.node.nodeSize;
         this.storage.overNode.value = {
           start: startPos - 1,
@@ -212,23 +245,34 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
           const sliceContent = slice.toJSON();
           const overStartPos = this.storage.overNode.value!.start;
           const overEndPos = this.storage.overNode.value!.end;
-          let isOverAlreadyColumn = false;
+          let isOverColumn = false;
           const overNode = this.editor.state.doc.nodeAt(overStartPos);
           if (overNode?.type.name === Column.name) {
-            isOverAlreadyColumn = true;
+            isOverColumn = true;
           }
           const newColumn = buildColumn(sliceContent);
-          if (isOverAlreadyColumn) {
-            // add the new column to the columns block
-            const columnBlock = this.editor.$pos(overStartPos).parent?.node;
-            // todo
+          if (isOverColumn) {
+            const tr = this.editor.state.tr;
+            tr.deleteRange(draggedStartPos, draggedEndPos);
+            const columnNode = this.editor.state.doc.type.schema.nodeFromJSON(newColumn);
+            if (columnNode === null) {
+              return;
+            }
+            if (this.storage.closestEdge.value === 'right') {
+              tr.insert(tr.mapping.map(overEndPos), columnNode);
+            }
+            else {
+              tr.insert(tr.mapping.map(overStartPos), columnNode);
+            }
+            this.editor.view.dispatch(tr);
           }
           else {
             // create a new column block with the new column
             const overNodeContent = this.editor.state.doc.slice(overStartPos, overEndPos).toJSON();
             const overNodeColumns = buildColumn(overNodeContent);
+            const content = this.storage.closestEdge.value === 'right' ? [overNodeColumns, newColumn] : [newColumn, overNodeColumns];
             const columnBlock = buildColumnBlock({
-              content: [overNodeColumns, newColumn],
+              content,
             });
             const newNode = this.editor.state.doc.type.schema.nodeFromJSON(columnBlock);
             if (newNode === null) {
@@ -282,7 +326,7 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
     return [Column, ColumnBlock, DeleteColumnWhenEmpty];
   },
 });
-
+function noop() {}
 function recurse(node: NodePos, fn: (node: NodePos) => void) {
   if (node.node.type.name !== 'doc')
     fn(node);
@@ -293,33 +337,35 @@ function attachDragListeners(node: NodePos) {
   const dom = node.element;
   const dragHandle = dom.parentElement!.querySelector('[data-drag-handle]') ?? undefined;
   const dragEnabled = node.node.type.spec.draggable;
-  if (!dragEnabled)
+  if (node.node.type.name === 'column')
     return;
   const dispose = combine(
-    draggable({
-      element: dom.parentElement!,
-      getInitialData: () => ({
-        pos: node.pos,
-      }),
-      dragHandle,
+    dragEnabled
+      ? draggable({
+        element: dom.parentElement!,
+        getInitialData: () => ({
+          pos: node.pos,
+        }),
+        dragHandle,
 
-      onDragStart: () => {
-        Dnd.storage.draggingState.value = {
-          type: 'dragging',
-          startPos: node.pos,
-          endPos: node.pos + node.node.nodeSize,
-        };
-      },
-      onDrop: () => {
-        Dnd.storage.lastDraggedNodePos.value = {
-          start: node.pos - 1,
-          end: node.pos - 1 + node.node.nodeSize,
-        };
-        Dnd.storage.draggingState.value = {
-          type: 'idle',
-        };
-      },
-    }),
+        onDragStart: () => {
+          Dnd.storage.draggingState.value = {
+            type: 'dragging',
+            startPos: node.pos,
+            endPos: node.pos + node.node.nodeSize,
+          };
+        },
+        onDrop: () => {
+          Dnd.storage.lastDraggedNodePos.value = {
+            start: node.pos - 1,
+            end: node.pos - 1 + node.node.nodeSize,
+          };
+          Dnd.storage.draggingState.value = {
+            type: 'idle',
+          };
+        },
+      })
+      : noop,
     register(dom),
   );
   Dnd.storage.disposables.push(dispose);
