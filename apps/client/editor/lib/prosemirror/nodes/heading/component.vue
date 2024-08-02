@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { NodeViewContent, isNodeEmpty, nodeViewProps } from '@tiptap/vue-3';
 import FormzNodeViewWrapper from '../FormzNodeViewWrapper.vue';
+import { useIsEmpty, useProvideNodeProps } from '../../composables';
 
 const props = defineProps(nodeViewProps);
-const isEmpty = ref(isNodeEmpty(props.node));
+const isEmpty = useIsEmpty(props);
 const node = props.node;
 const level = node.attrs.level;
-onUpdated(() => {
-  isEmpty.value = isNodeEmpty(props.node);
-});
+useProvideNodeProps(props);
 </script>
 
 <template>

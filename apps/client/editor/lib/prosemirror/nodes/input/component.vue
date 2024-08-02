@@ -2,15 +2,21 @@
 import { findParentNode, NodeViewContent, nodeViewProps } from '@tiptap/vue-3';
 import FormzNodeViewWrapper from '../FormzNodeViewWrapper.vue';
 import { NodeSelection } from '@tiptap/pm/state';
+import { useIsEmpty, useProvideNodeProps } from '../../composables';
 const props = defineProps(nodeViewProps);
+const isEmpty = useIsEmpty(props);
 const isFullWidth = computed(()=>!!findParentNode((node)=>node.type.name === "column")(new NodeSelection(props.editor.$doc.node.resolve(props.getPos()))))
+useProvideNodeProps(props);
+
 </script>
 
 <template>
   <FormzNodeViewWrapper class="input w-full" :class="[{'w-full': isFullWidth}, {'md:w-1/2': !isFullWidth}]">
     <NodeViewContent
-    
-      class="placeholder"
+      as="p"
+      :class="{'placeholderPlaceholder': isEmpty}"
+      :data-placeholder="props.node.attrs.placeholder || 'Type placeholder here...'" 
+      class="inputPlaceholder"
     />
   </FormzNodeViewWrapper>
 </template>
@@ -31,10 +37,18 @@ const isFullWidth = computed(()=>!!findParentNode((node)=>node.type.name === "co
 
   
 }
-.placeholder{
+.inputPlaceholder{
   color: #ccc;
   font-style: italic;
   height: 0;
   width: 100%;
+}
+.placeholderPlaceholder::before {
+  content: attr(data-placeholder);
+  color: #ccc;
+  font-style: italic;
+  float: left;
+  height: 0;
+  pointer-events: none;
 }
 </style>

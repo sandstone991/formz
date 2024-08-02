@@ -6,6 +6,7 @@ import { editorDependecyKey, isProductionDependecyKey } from '../provide';
 import type { DndExtensionStorage } from '../dnd';
 import { invoke } from '@vueuse/core';
 import { Primitive, type AsTag } from 'radix-vue';
+import { useInjectNodeProps } from '../composables';
 
 const props = withDefaults(defineProps<{
     as?: string | globalThis.Component | AsTag ,

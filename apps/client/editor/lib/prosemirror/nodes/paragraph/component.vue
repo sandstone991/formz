@@ -1,33 +1,12 @@
 <script setup lang="ts">
-import { type EditorEvents, NodeViewContent, isNodeEmpty, nodeViewProps } from '@tiptap/vue-3';
+import { NodeViewContent, nodeViewProps } from '@tiptap/vue-3';
 import FormzNodeViewWrapper from '../FormzNodeViewWrapper.vue';
-import { editorDependecyKey } from '../../provide';
+import { useIsEmpty, useIsLastChild, useProvideNodeProps } from '../../composables';
 
 const props = defineProps(nodeViewProps);
-const isEmpty = ref(isNodeEmpty(props.node));
-const isLastChild = ref(getIsLastChild());
-function getIsLastChild() {
-  const parent = props.editor.state.doc.resolve(props.getPos()).parent;
-  const lastChildPos = parent.content.size;
-  return lastChildPos === props.getPos() + props.node.nodeSize;
-}
-onUpdated(() => {
-  isEmpty.value = isNodeEmpty(props.node);
-  isLastChild.value = getIsLastChild();
-});
-const fn = ref<(args: EditorEvents['transaction']) => void>(
-  (args: EditorEvents['transaction']) => {
-    if (args.transaction.docChanged) {
-      isLastChild.value = getIsLastChild();
-    }
-  },
-);
-onMounted(() => {
-  props.editor.on('transaction', fn.value);
-});
-onUnmounted(() => {
-  props.editor.off('transaction', fn.value);
-});
+const isEmpty = useIsEmpty(props);
+const isLastChild = useIsLastChild(props);
+useProvideNodeProps(props);
 </script>
 
 <template>

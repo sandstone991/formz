@@ -1,16 +1,24 @@
 
 <script setup lang="ts">
+import { useInjectNodeProps } from '../composables';
+
 
  defineProps<{isHovered:boolean}>();
+ const nodeProps = useInjectNodeProps();
+const insertNodeAfter = ()=>{
+    nodeProps.editor.commands.insertContentAt(nodeProps.getPos() + nodeProps.node.nodeSize, {
+        type: "paragraph",
 
+    })
+}
 </script>
 <template>
-    <div  contenteditable="false" class="absolute z-10 overflow-visible left-[-80px] top-1 flex flex-row gap-2 justify-between items-center px-4 bg-transparent" :class="{
+    <div  contenteditable="false" class="absolute z-10 bg-white overflow-visible left-[-80px] shadow-md rounded-md p-2 -top-1 flex flex-row gap-2 justify-between items-center bg-transparent" :class="{
         'opacity-0': !isHovered,
         'opacity-100': isHovered
     }">
-        <span class="icon-[ph--trash-thin]"></span>
-        <span class="icon-[ic--baseline-plus]"></span> 
+        <span class="icon-[ph--trash-thin]" @click="nodeProps.deleteNode"></span>
+        <span class="icon-[ic--baseline-plus]" @click="insertNodeAfter"></span> 
         <span data-drag-handle="true" class="icon-[grommet-icons--drag]"></span>
         </div>
 
