@@ -3,6 +3,7 @@ import { NodeSelection, type Transaction } from '@tiptap/pm/state';
 import type { Node, ResolvedPos } from 'prosemirror-model';
 import { deleteNode } from '../transfroms/deleteNode';
 import { insertContent } from '../transfroms/insertContent';
+import { insertContentAt } from '../transfroms/insertContentAt';
 
 function times<T>(n: number, fn: (i: number) => T): T[] {
   return Array.from({ length: n }, (_, i) => fn(i));
@@ -17,7 +18,9 @@ export function buildParagraph({ content }: Partial<JSONContent>) {
 }
 
 export function buildColumn({ content }: Partial<JSONContent>) {
-  return buildNode({ type: 'column', content });
+  return buildNode({ type: 'column', content, attrs: {
+    widthPercentage: 50,
+  } });
 }
 
 export function buildColumnBlock({ content }: Partial<JSONContent>) {
@@ -111,7 +114,7 @@ export function removeColumnAtTransform({ tr, editor, pos }: { tr: Transaction, 
     const sel = new NodeSelection(tr.doc.resolve(columnBlock.pos));
     tr = tr.setSelection(sel);
     tr = tr.deleteSelection();
-    tr = insertContent({ editor, tr, value: childrenSlice });
+    tr = insertContentAt({ editor, tr, value: childrenSlice, position: columnBlock.pos });
     return tr;
   }
   else {

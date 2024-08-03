@@ -15,6 +15,7 @@ import { Column } from './Column';
 import { ColumnBlock } from './ColumnBlock';
 import { buildColumn, buildColumnBlock } from './utils';
 import { DeleteColumnWhenEmpty } from './DeleteColumnWhenEmpty';
+import { ResizeColumns } from './ResizeColumn';
 
 const uniqueKey = Symbol('closestEdge');
 const registery = new Set<Element>();
@@ -192,11 +193,11 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
           return;
 
         if (closestEdge && ['left', 'right'].includes(closestEdge)) {
-          if (node.parent?.node.type.name === 'column') {
+          if (node.parent?.node.type.name === Column.name) {
             startPos = node.parent.pos;
             node = node.parent;
           }
-          else if (node.node.type.name === 'columnBlock') {
+          else if (node.node.type.name === ColumnBlock.name) {
             if (closestEdge === 'left') {
               startPos = node.firstChild!.pos;
               node = node.firstChild!;
@@ -325,7 +326,7 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
     };
   },
   addExtensions() {
-    return [Column, ColumnBlock, DeleteColumnWhenEmpty];
+    return [Column, ColumnBlock, DeleteColumnWhenEmpty, ResizeColumns];
   },
 });
 function noop() {}

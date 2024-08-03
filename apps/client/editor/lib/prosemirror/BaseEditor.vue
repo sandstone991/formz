@@ -42,12 +42,13 @@ provide(isProductionDependecyKey, isProduction);
     ">edit</button>
     <EditorContent :editor="editor" />
   </div>  
-  <pre class="text-start">
-    {{ editor?.storage }}
-  </pre>
   <pre class="text-start">{{ 
   editor?.getJSON()
   }}</pre>
+
+  <pre class="text-start">
+    {{ editor?.storage }}
+  </pre>
 
 </template>
 
