@@ -34,7 +34,7 @@ provide(isProductionDependecyKey, isProduction);
 </script>
 
 <template>
-  <div class="w-full h-full">
+  <div class="w-full h-full" dir="rtl">
     <button @click="editor?.setEditable(false);
       isProduction = true">preview</button>
     <button @click="editor?.setEditable(true);
