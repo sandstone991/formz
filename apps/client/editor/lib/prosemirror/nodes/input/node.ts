@@ -8,6 +8,7 @@ export const InputNode = Node.create({
   group: 'block',
   defining: true,
   isolating: true,
+
   addNodeView() {
     return VueNodeViewRenderer(Component);
   },

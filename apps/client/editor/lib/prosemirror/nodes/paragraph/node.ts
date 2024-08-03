@@ -42,7 +42,6 @@ export const paragraphNode = Node.create<ParagraphOptions>({
       { tag: 'p' },
     ];
   },
-
   renderHTML({ HTMLAttributes }) {
     return ['p', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
   },
@@ -64,4 +63,5 @@ export const paragraphNode = Node.create<ParagraphOptions>({
       'Mod-Alt-0': () => this.editor.commands.setParagraph(),
     };
   },
+
 });

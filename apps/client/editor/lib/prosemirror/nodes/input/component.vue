@@ -42,17 +42,19 @@ useProvideNodeProps(props);
 .inputPlaceholder{
   color: #ccc;
   font-style: italic;
-  height: 0;
+  height: 30px;
   width: 100%;
+  overflow: hidden;
 }
 .placeholderPlaceholder::before {
   content: attr(data-placeholder);
   color: #ccc;
   font-style: italic;
   float: inline-start;
-  height: 0;
+  height: 30px;
   pointer-events: none;
   text-align: start;
+  overflow: hidden;
 
 }
 </style>

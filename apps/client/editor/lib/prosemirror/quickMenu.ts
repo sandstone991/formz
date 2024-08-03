@@ -50,10 +50,8 @@ class _QuickMenu {
       const block = blocksRegistry[key as BlockTypes];
       const button = document.createElement('li');
       button.id = key;
-      // set text of button
       const textSpan = document.createElement('span');
       textSpan.textContent = block.title;
-      // set icon of button
       const icon = document.createElement('span');
       icon.className = block.icon;
       button.appendChild(icon);
@@ -93,7 +91,6 @@ class _QuickMenu {
     const block = blocksRegistry[nodeType];
     const node = state.schema.nodes[block.nodeType].create(block.initialAttrs);
     tr.insert(posToInsertAfterDeletion, node);
-    // move selection to the end of the block
     tr.setSelection(TextSelection.near(tr.doc.resolve(posToInsertAfterDeletion + node.nodeSize)));
     dispatch(tr);
     this.close();
