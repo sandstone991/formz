@@ -13,7 +13,7 @@ useProvideNodeProps(props);
 <template>
   <FormzNodeViewWrapper>
     <NodeViewContent
-      :data-placeholder="props.node.attrs.placeholder || 'Heading'" :as="`h${level}`" :class="{
+      :data-placeholder="props.node.attrs.placeholder || 'Heading'" :as="`h${level}`" class="text-start" :class="{
         placeholder: isEmpty,
       }"
     />
@@ -25,8 +25,9 @@ useProvideNodeProps(props);
   content: attr(data-placeholder);
   color: #ccc;
   font-style: italic;
-  float: left;
+  float: inline-start;
   height: 0;
   pointer-events: none;
+  text-align: start;
 }
 </style>

@@ -47,8 +47,10 @@ useProvideNodeProps(props);
   content: attr(data-placeholder);
   color: #ccc;
   font-style: italic;
-  float: left;
+  float: inline-start;
   height: 0;
   pointer-events: none;
+  text-align: start;
+
 }
 </style>

@@ -56,8 +56,11 @@
     "eslint-plugin-format": "^0.1.2",
     "nuxt": "^3.12.4",
     "pinia": "^2.2.0",
+    "postcss-dir-pseudo-class": "^8.0.1",
+    "postcss-logical": "^7.0.1",
     "shadcn-nuxt": "^0.10.4",
     "shadcn-vue": "^0.10.5",
+    "tailwindcss-logical": "^3.0.1",
     "typescript": "^5.5.4",
     "vue-tsc": "^2.0.29"
   }
