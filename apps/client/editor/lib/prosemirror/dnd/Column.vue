@@ -18,14 +18,12 @@ const isFirstChild = useIsFirstChild (props);
     <NodeViewContent
       as="div" class="column" 
     />
-    <ResizeHandle v-if="!isFirstChild"/>
+    <ResizeHandle v-bind="props" v-if="!isFirstChild"/>
 
   </FormzNodeViewWrapper>
 </template>
 
 <style scoped>
 .column {
-    padding: 8px;
-    margin: -8px;
 }
 </style>

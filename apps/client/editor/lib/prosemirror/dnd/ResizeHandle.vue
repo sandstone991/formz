@@ -1,5 +1,9 @@
 <script setup lang="ts">
+import { nodeViewProps } from '@tiptap/vue-3';
+import { useIndex } from '../composables';
 
+const props = defineProps(nodeViewProps)
+const index = useIndex(props)
 </script>
 
 <template>

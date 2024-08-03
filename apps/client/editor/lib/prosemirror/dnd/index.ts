@@ -335,17 +335,33 @@ function recurse(node: NodePos, fn: (node: NodePos) => void) {
     fn(node);
   node.children.forEach(child => recurse(child, fn));
 }
-
+function findWrapperNode(element: Element) {
+  if (element.parentElement === null) {
+    return null;
+  }
+  if (element.parentElement.getAttribute('data-node-view-wrapper') !== null) {
+    return element.parentElement;
+  }
+  return findWrapperNode(element.parentElement);
+}
+function findDropArea(element: Element) {
+  if (element.getAttribute('data-droparea') !== null) {
+    return element;
+  }
+  return element.querySelector('[data-droparea]');
+}
 function attachDragListeners(node: NodePos) {
-  const dom = node.element;
-  const dragHandle = dom.parentElement!.querySelector('[data-drag-handle]') ?? undefined;
   const dragEnabled = node.node.type.spec.draggable;
+  const draggableElement = findWrapperNode(node.element);
+  const dom = findDropArea(draggableElement!) ?? node.element;
+  const dragHandle = draggableElement!.querySelector('[data-drag-handle]') ?? undefined;
+
   if (node.node.type.name === 'column')
     return;
   const dispose = combine(
     dragEnabled
       ? draggable({
-        element: dom.parentElement!,
+        element: draggableElement!,
         getInitialData: () => ({
           pos: node.pos,
         }),

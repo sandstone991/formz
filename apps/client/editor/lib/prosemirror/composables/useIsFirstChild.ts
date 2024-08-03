@@ -20,10 +20,10 @@ export function useIsFirstChild(props: NodeViewProps) {
     },
   );
   onMounted(() => {
-    props.editor.on('transaction', fn.value);
+    props.editor.on('update', fn.value);
   });
   onUnmounted(() => {
-    props.editor.off('transaction', fn.value);
+    props.editor.off('update', fn.value);
   });
   return isFirstChild;
 }

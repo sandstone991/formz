@@ -8,14 +8,10 @@ defineProps(nodeViewProps);
 
 <template>
   <FormzNodeViewWrapper :drag-enabled="false"  data-column-block>    
-    <NodeViewContent class="column-block"/>
+    <NodeViewContent class="flex flex-col sm:flex-row gap-4"/>
   </FormzNodeViewWrapper>
 </template>
 
 <style scoped>
-.column-block {
-  position: relative;
-  display: flex;
-  padding: 8px;
-}
+
 </style>
