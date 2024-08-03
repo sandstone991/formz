@@ -28,7 +28,6 @@ const resize = (event: MouseEvent) => {
   if (!isResizing.value) return
   const leftSiblingNode = props.editor.$pos(leftSiblingNodePos.value)
   const currentNode = props.editor.$pos(currentPos.value)
-
   const element = currentNode.element;
   const leftSiblingElement = leftSiblingNode.element;
   if(!element || !leftSiblingElement) return
