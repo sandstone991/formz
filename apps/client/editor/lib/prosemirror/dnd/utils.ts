@@ -55,7 +55,6 @@ export function findParentNodeClosestToPos($pos: ResolvedPos, predicate: Predica
       };
     }
   }
-  throw new Error('no ancestor found');
 }
 
 export function changedDescendants(old: Node, cur: Node, offset: number, f: (node: Node, offset: number) => void) {

@@ -7,18 +7,15 @@ defineProps(nodeViewProps);
 </script>
 
 <template>
-  <FormzNodeViewWrapper :drag-enabled="false" data-column-block>    
+  <FormzNodeViewWrapper :drag-enabled="false"  data-column-block>    
     <NodeViewContent class="column-block"/>
   </FormzNodeViewWrapper>
 </template>
 
 <style scoped>
 .column-block {
-  width: 100%;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 24px;
-  padding: 8px 0;
+  position: relative;
+  display: flex;
+  padding: 8px;
 }
 </style>

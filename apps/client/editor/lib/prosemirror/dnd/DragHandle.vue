@@ -16,8 +16,8 @@ const className = "w-2 h-2 p-2 hover:bg-gray-400"
 </script>
 <template>
     <div  contenteditable="false" class="absolute z-10 bg-white overflow-visible inline-start-[-80px] shadow-md rounded-md p-2 -top-1 flex flex-row gap-2 justify-between items-center bg-transparent" :class="{
-        'opacity-0': !isHovered,
-        'opacity-100': isHovered
+        'hidden': !isHovered,
+        
     }">
         <Button as="span" variant="default" :class="className" class="icon-[ph--trash-thin]"  @click="nodeProps.deleteNode"></Button>
         <Button as="span" variant="default" :class="className" class="icon-[ic--baseline-plus]" @click="insertNodeAfter"></Button> 
