@@ -12,11 +12,14 @@ export const ResizeColumns = Extension.create({
         appendTransaction(_, oldState, newState) {
           let tr = newState.tr;
           let changed = false;
+
           changedDescendants(oldState.doc, newState.doc, 0, (node, changedPos) => {
             if (node.type.name === ColumnBlock.name) {
               changed = true;
               const oldColumnsCount = oldState.doc.nodeAt(oldState.tr.mapping.map(changedPos))?.childCount ?? 0;
               const columnCount = node.childCount;
+              if (oldColumnsCount === columnCount)
+                return;
               const percentage = +(100 / columnCount).toFixed(2);
               const children = findChildren(node, child => child.type.name === Column.name);
               children.forEach((child) => {

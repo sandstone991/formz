@@ -6,14 +6,14 @@ import ResizeHandle from './ResizeHandle.vue';
 import { useIsFirstChild } from '../composables';
 
 const props = defineProps(nodeViewProps);
-const attrs = props.node.attrs as ColumnAttributes;
+const width = computed(() => (props.node.attrs as ColumnAttributes).widthPercentage + "%");
 const isFirstChild = useIsFirstChild (props);
 
 </script>
 
 <template>
   <FormzNodeViewWrapper :drag-enabled="false" data-column class="relative" :style="{
-    width: `${attrs.widthPercentage}%`,
+   width,
   }">
     <NodeViewContent
       as="div" class="column" 
