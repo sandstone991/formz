@@ -14,17 +14,22 @@ const leftSiblingNodePos = computed(() =>{
 const mouseStartingPos = ref(0)
 const isResizing = ref(false)
 const startResizing = (event: MouseEvent) => {
+  props.editor.setEditable(false)
+  props.editor.view.dom.classList.add('select-none')
   isResizing.value = true
   mouseStartingPos.value = event.clientX
 }
 const stopResizing = () => {
+  props.editor.setEditable(true)
+  props.editor.view.dom.classList.remove('select-none')
   isResizing.value = false
 }
 function findColumnBlock(node: HTMLElement) {
   if(node.hasAttribute('data-column-block')) return node
   return findColumnBlock(node.parentElement!)
 }
-const resize = (event: MouseEvent) => {
+
+const resize =useThrottleFn((event: MouseEvent) => {
   if (!isResizing.value) return
   const leftSiblingNode = props.editor.$pos(leftSiblingNodePos.value)
   const currentNode = props.editor.$pos(currentPos.value)
@@ -46,8 +51,9 @@ const resize = (event: MouseEvent) => {
   tr.setNodeMarkup(leftSiblingNodePos.value - 1, undefined, { widthPercentage: +newLeftSiblingNodeWidthPercentage.toFixed(2) })
   tr.setNodeMarkup(currentPos.value -  1, undefined, {  widthPercentage: +newCurrentWidthPercentage.toFixed(2) })
   props.editor.view.dispatch(tr)
-}
-useEventListener('mousemove', resize)
+}, 50)
+
+useEventListener('mousemove',(e)=>resize(e))
 useEventListener('mouseup', stopResizing)
 </script>
 

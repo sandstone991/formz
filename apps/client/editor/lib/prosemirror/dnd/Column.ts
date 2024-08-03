@@ -1,5 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
+import { Plugin } from '@tiptap/pm/state';
 import ColumnComponent from './Column.vue';
 
 export type ColumnAttributes = {
@@ -27,4 +28,5 @@ export const Column = Node.create({
   parseHTML() {
     return [{ tag: 'div.column' }];
   },
+
 });
