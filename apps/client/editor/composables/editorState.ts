@@ -1,5 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia';
-import type { FormzLayout } from '../lib/interace';
+import type { FormzLayout } from '../lib/interface';
 
 export const useEditorStore = defineStore('editor', () => {
   const layout = ref<FormzLayout>([]);

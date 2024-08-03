@@ -26,29 +26,7 @@ class _QuickMenu {
     this.dom.tabIndex = 0;
     this.dom.role = 'menu';
     document.body.appendChild(this.dom);
-    let first = true;
-    forEach(blocksRegistry, (block) => {
-      const button = document.createElement('li');
-      button.id = block.nodeType;
-      // set text of button
-      const textSpan = document.createElement('span');
-      textSpan.textContent = block.title;
-      // set icon of button
-      const icon = document.createElement('span');
-      icon.className = block.icon;
-      button.appendChild(icon);
-      button.appendChild(textSpan);
-      button.className = 'flex items-center gap-2 cursor-pointer hover:bg-gray-300 p-2';
-      if (first) {
-        button.classList.add(selectedClass);
-        first = false;
-      }
-      button.addEventListener('click', () => {
-        this.insertBlock(block.nodeType as BlockTypes);
-        this.view.focus();
-      });
-      this.dom.appendChild(button);
-    });
+    this.generateMenu();
   }
 
   switchActiveClass(cur: number, prev: number) {
@@ -71,7 +49,7 @@ class _QuickMenu {
     forEach(filteredBlocks, (key) => {
       const block = blocksRegistry[key as BlockTypes];
       const button = document.createElement('li');
-      button.id = block.nodeType;
+      button.id = key;
       // set text of button
       const textSpan = document.createElement('span');
       textSpan.textContent = block.title;
@@ -110,14 +88,11 @@ class _QuickMenu {
     const { state, dispatch } = this.view;
     const pos = state.selection.head;
     const tr = state.tr.delete(this.lastSlashPos, pos);
-    const lastStep = tr.steps[tr.steps.length - 1];
-    const stepMap = lastStep.getMap();
-    const posToInsertAfterDeletion = stepMap.map(pos);
+    const mapping = tr.mapping;
+    const posToInsertAfterDeletion = mapping.map(pos);
     const block = blocksRegistry[nodeType];
-    const node = state.schema.nodes[block.nodeType].create();
-
+    const node = state.schema.nodes[block.nodeType].create(block.initialAttrs);
     tr.insert(posToInsertAfterDeletion, node);
-
     // move selection to the end of the block
     tr.setSelection(TextSelection.near(tr.doc.resolve(posToInsertAfterDeletion + node.nodeSize)));
     dispatch(tr);
@@ -218,7 +193,6 @@ export const qucikMenuPlugin = new Plugin({
       if (key === 'ArrowUp') {
         if (!QuickMenu.instance.isOpen)
           return false;
-        console.log('arrow up');
         QuickMenu.instance.handleArrowUp();
         return true;
       }

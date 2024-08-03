@@ -1,4 +1,4 @@
-import type { QuickMenuBlock } from '~/editor/lib/interace';
+import type { QuickMenuBlock } from '~/editor/lib/interface';
 
 export const paragraphBlock: QuickMenuBlock = {
   nodeType: 'paragraph',
