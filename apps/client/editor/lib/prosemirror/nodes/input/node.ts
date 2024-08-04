@@ -1,23 +1,23 @@
-import { Node, VueNodeViewRenderer, mergeAttributes } from '@tiptap/vue-3';
+import { VueNodeViewRenderer, mergeAttributes } from '@tiptap/vue-3';
+import { BaseInputNode } from '../baseInputNode';
 import Component from './component.vue';
 
-export const InputNode = Node.create({
+export const InputNode = BaseInputNode.extend({
   name: 'input',
-
   content: 'inline*',
   group: 'block',
   defining: true,
   isolating: true,
+  draggable: true,
 
   addNodeView() {
     return VueNodeViewRenderer(Component);
   },
   renderHTML({ HTMLAttributes }) {
-    return ['input', mergeAttributes(HTMLAttributes), 0];
+    return ['div', mergeAttributes(HTMLAttributes), 0];
   },
   parseHTML() {
-    return [{ tag: 'input' }];
+    return [{ tag: 'div' }];
   },
 
-  draggable: true,
 });

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import StarterKit from '@tiptap/starter-kit';
-import { Dnd } from './dnd';
 import { QuickMenuExtension } from './quickMenu';
 import { formzProsemirrorNodes } from './nodes';
 import { editorDependecyKey, isProductionDependecyKey } from './provide';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
+import { AutoLabel } from './extensions/autoLabel';
+import { Dnd } from './extensions/dnd';
+import { UniqueId } from './extensions/uniqueId';
 
 const editor = useEditor({
   content: `
@@ -25,7 +27,8 @@ const editor = useEditor({
     }),
     ...formzProsemirrorNodes,
     Dnd,
-
+    UniqueId,
+    AutoLabel
   ],
 });
 provide(editorDependecyKey, editor);
@@ -34,7 +37,7 @@ provide(isProductionDependecyKey, isProduction);
 </script>
 
 <template>
-  <div class="w-full h-full" dir="rtl">
+  <div class="w-full h-full">
     <button @click="editor?.setEditable(false);
       isProduction = true">preview</button>
     <button @click="editor?.setEditable(true);

@@ -3,7 +3,7 @@ import { Selection, SelectionRange, TextSelection } from 'prosemirror-state';
 
 import { Column } from './Column';
 import { ColumnBlock } from './ColumnBlock';
-import { findParentNodeClosestToPos } from './utils';
+import { findParentNodeClosestToPos, isColumn } from './utils';
 import type { Predicate } from './utils';
 
 type Mutable<T> = {
@@ -48,7 +48,7 @@ export class ColumnSelection extends Selection {
   expandSelection(doc: Node) {
     // find the first ancestor of the beginning of the selection
     const where: Predicate = ({ pos, node }) => {
-      if (node.type.name === Column.name) {
+      if (isColumn(node)) {
         return true;
       }
       return doc.resolve(pos).depth <= 0;

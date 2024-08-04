@@ -1,8 +1,7 @@
 import { Plugin } from '@tiptap/pm/state';
 import { Extension } from '@tiptap/vue-3';
-import { paragraphNode } from '../nodes/paragraph';
-import { changedDescendants, removeColumnAtTransform } from './utils';
-import { Column } from './Column';
+import { paragraphNode } from '../../nodes/paragraph';
+import { changedDescendants, isColumn, removeColumnAtTransform } from './utils';
 
 export const DeleteColumnWhenEmpty = Extension.create({
   name: 'deleteColumnWhenEmpty',
@@ -10,11 +9,14 @@ export const DeleteColumnWhenEmpty = Extension.create({
     const editor = this.editor;
     return [
       new Plugin({
-        appendTransaction(_, oldState, newState) {
+        appendTransaction(transactions, oldState, newState) {
           let tr = newState.tr;
           let changed = false;
+          const shouldCheck = transactions.some(transaction => transaction.docChanged);
+          if (!shouldCheck)
+            return;
           changedDescendants(oldState.doc, newState.doc, 0, (node, pos) => {
-            if (node.type.name !== Column.name)
+            if (!isColumn(node))
               return;
 
             if (node.childCount === 0) {

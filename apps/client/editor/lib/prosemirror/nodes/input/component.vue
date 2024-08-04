@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { findParentNode, NodeViewContent, nodeViewProps } from '@tiptap/vue-3';
+import {  NodeViewContent, nodeViewProps } from '@tiptap/vue-3';
 import FormzNodeViewWrapper from '../FormzNodeViewWrapper.vue';
-import { NodeSelection } from '@tiptap/pm/state';
 import { useIsEmpty, useProvideNodeProps } from '../../composables';
-import { Column } from '../../dnd/Column';
+import { isColumn } from '../../extensions/dnd/utils';
 const props = defineProps(nodeViewProps);
 const isEmpty = useIsEmpty(props);
-const isFullWidth = computed(()=>!!findParentNode((node)=>node.type.name === Column.name)(new NodeSelection(props.editor.$doc.node.resolve(props.getPos()))))
+const isFullWidth = computed(()=>isColumn(props.editor.state.doc.resolve(props.getPos()).parent))
 useProvideNodeProps(props);
 
 </script>

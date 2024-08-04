@@ -9,8 +9,7 @@ import {
 import type {
   Edge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
-import { clamp, debounce } from 'lodash-es';
-import { insertContentAt } from '../transfroms/insertContentAt';
+import { debounce } from 'lodash-es';
 import { Column } from './Column';
 import { ColumnBlock } from './ColumnBlock';
 import { buildColumn, buildColumnBlock } from './utils';

@@ -9,10 +9,12 @@ export const ResizeColumns = Extension.create({
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        appendTransaction(_, oldState, newState) {
+        appendTransaction(transactions, oldState, newState) {
           let tr = newState.tr;
           let changed = false;
-
+          const shouldCheck = transactions.some(transaction => transaction.docChanged);
+          if (!shouldCheck)
+            return;
           changedDescendants(oldState.doc, newState.doc, 0, (node, changedPos) => {
             if (node.type.name === ColumnBlock.name) {
               changed = true;

@@ -1,9 +1,10 @@
 import type { Editor, JSONContent } from '@tiptap/core';
 import { NodeSelection, type Transaction } from '@tiptap/pm/state';
 import type { Node, ResolvedPos } from 'prosemirror-model';
-import { deleteNode } from '../transfroms/deleteNode';
-import { insertContent } from '../transfroms/insertContent';
-import { insertContentAt } from '../transfroms/insertContentAt';
+
+import { insertContentAt } from '../../transfroms/insertContentAt';
+import { Column } from './Column';
+import { ColumnBlock } from './ColumnBlock';
 
 function times<T>(n: number, fn: (i: number) => T): T[] {
   return Array.from({ length: n }, (_, i) => fn(i));
@@ -84,16 +85,15 @@ export function removeColumnAtTransform({ tr, editor, pos }: { tr: Transaction, 
   const mappedPos = tr.mapping.map(pos);
   const resPos = tr.doc.resolve(mappedPos);
   const where: Predicate = ({ node }) => {
-    return node.type.name === 'columnBlock';
+    return isColumnBlock(node);
   };
-
   const columnBlock = findParentNodeClosestToPos(resPos, where);
   if (columnBlock === undefined) {
     return tr;
   }
   const columns: { node: Node, pos: number }[] = [];
   columnBlock.node.descendants((node, pos) => {
-    if (node.type.name === 'column') {
+    if (isColumn(node)) {
       columns.push({ node, pos: pos + columnBlock.pos });
       return false;
     }
@@ -131,4 +131,12 @@ export function removeColumnAtTransform({ tr, editor, pos }: { tr: Transaction, 
 export function removeColumnTransform({ tr, editor }: { tr: Transaction, editor: Editor }) {
   const pos = tr.selection.$from.pos;
   return removeColumnAtTransform({ tr, editor, pos });
+}
+
+export function isColumn(node: Node) {
+  return node.type.name === Column.name;
+}
+
+export function isColumnBlock(node: Node) {
+  return node.type.name === ColumnBlock.name;
 }

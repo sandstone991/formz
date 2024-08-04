@@ -1,7 +1,7 @@
 
 <script setup lang="ts">
 import Button from '~/components/ui/button/Button.vue';
-import { useInjectNodeProps } from '../composables';
+import { useInjectNodeProps } from '../../composables';
 
 
  defineProps<{isHovered:boolean}>();

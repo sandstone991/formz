@@ -1,12 +1,11 @@
 <script setup lang="ts">
 
-import DragHandle from '../dnd/DragHandle.vue';
-import DropIndicator from '../dnd/DropIndicator.vue';
+import DragHandle from '../extensions/dnd/DragHandle.vue';
+import DropIndicator from '../extensions/dnd/DropIndicator.vue';
 import { editorDependecyKey, isProductionDependecyKey } from '../provide';
-import type { DndExtensionStorage } from '../dnd';
+import type { DndExtensionStorage } from '../extensions/dnd';
 import { invoke } from '@vueuse/core';
 import { Primitive, type AsTag } from 'radix-vue';
-import { useInjectNodeProps } from '../composables';
 
 const props = withDefaults(defineProps<{
     as?: string | globalThis.Component | AsTag ,
