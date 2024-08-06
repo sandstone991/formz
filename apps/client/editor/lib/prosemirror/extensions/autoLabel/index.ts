@@ -1,5 +1,7 @@
 import type { EditorState } from '@tiptap/pm/state';
 import { Plugin } from '@tiptap/pm/state';
+import { ChangeSet } from '@tiptap/pm/changeset';
+
 import { Extension, findChildren, findParentNodeClosestToPos } from '@tiptap/vue-3';
 import { flatten } from 'prosemirror-utils';
 import type { Node } from '@tiptap/pm/model';
@@ -47,7 +49,7 @@ export const AutoLabel = Extension.create({
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        appendTransaction(transactions, _, newState) {
+        appendTransaction(transactions, prevState, newState) {
           const tr = newState.tr;
           let changed = false;
           const shouldCheck = transactions.some((transaction) => {
@@ -72,6 +74,7 @@ export const AutoLabel = Extension.create({
             }
             tr.setNodeMarkup(pos, undefined, { inputId: null, inputPos: null });
           });
+
           if (changed)
             return tr;
         },

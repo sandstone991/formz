@@ -6,7 +6,7 @@ import { editorDependecyKey, isProductionDependecyKey } from './provide';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import { AutoLabel } from './extensions/autoLabel';
 import { Dnd } from './extensions/dnd';
-import { UniqueId } from './extensions/uniqueId';
+import { UniqueID } from './extensions/uniqueId';
 
 const editor = useEditor({
   content: `
@@ -27,7 +27,9 @@ const editor = useEditor({
     }),
     ...formzProsemirrorNodes,
     Dnd,
-    UniqueId,
+    UniqueID.configure({
+      types: ["input"]
+    }),
     AutoLabel
   ],
 });
