@@ -1,17 +1,19 @@
 import type { EditorState } from '@tiptap/pm/state';
 import { Plugin } from '@tiptap/pm/state';
 import { Extension, findChildren, findParentNodeClosestToPos } from '@tiptap/vue-3';
-
+import { flatten } from 'prosemirror-utils';
 import type { Node } from '@tiptap/pm/model';
-import { changedDescendants, isColumn, isColumnBlock } from '../dnd/utils';
+import { isColumnBlock } from '../dnd/utils';
 import { labelNode } from '../../nodes/label';
 import { inputNodes } from '../../nodes';
 
 function getChildIndex(childPos: number, parentPos: number, editorState: EditorState) {
-  const parent = editorState.doc.nodeAt(parentPos);
-  if (!parent)
+  const node = editorState.doc.nodeAt(parentPos);
+  if (!node)
     return -1;
-  return parent.childAfter(childPos).index;
+  const children = flatten(node, false).map(item => ({ node: item.node, pos: item.pos + parentPos }));
+  const index = children.findIndex(child => childPos > child.pos && childPos < child.pos + child.node.nodeSize);
+  return index;
 }
 
 function isInputNode(node: Node) {
@@ -23,28 +25,21 @@ function getLeftOrRightSiblingColumnChildAtTheSameIndex(nodePos: number, leftOrR
   const columnBlock = findParentNodeClosestToPos(resPos, isColumnBlock);
   if (!columnBlock)
     return null;
-  const column = findParentNodeClosestToPos(resPos, isColumn);
-  if (!column)
+  const columns = flatten(columnBlock.node, false).map(item => ({ node: item.node, pos: item.pos + columnBlock.start }));
+  if (columns.length <= 1)
     return null;
-  const columnIndex = getChildIndex(column.pos, columnBlock.pos, editorState);
-  if (columnIndex === -1)
+  const targetColumnIndex = columns.findIndex(column => nodePos > column.pos && nodePos < column.pos + column.node.nodeSize);
+  if (targetColumnIndex === -1)
     return null;
-  const rightSiblingColumn = columnBlock.node.child(columnIndex + (leftOrRight === 'left' ? -1 : 1));
-  if (!rightSiblingColumn)
+  const adjacentColumnIndex = targetColumnIndex + (leftOrRight === 'left' ? -1 : 1);
+  const adjacentColumn = columns[adjacentColumnIndex];
+  if (!adjacentColumn)
     return null;
-  const childIndex = getChildIndex(nodePos, column.pos, editorState);
-  if (childIndex === -1)
+  const targetChildIndex = getChildIndex(nodePos, columns[targetColumnIndex].pos, editorState);
+  const adjacentColumnChild = flatten(adjacentColumn.node, false).map(item => ({ node: item.node, pos: item.pos + adjacentColumn.pos }))[targetChildIndex];
+  if (!adjacentColumnChild)
     return null;
-
-  const child = rightSiblingColumn.child(childIndex);
-  if (!child)
-    return null;
-  const [nodeWithPos] = findChildren(rightSiblingColumn, (node) => {
-    return node === child;
-  });
-  if (!nodeWithPos)
-    return null;
-  return nodeWithPos;
+  return { node: adjacentColumnChild.node, pos: adjacentColumnChild.pos + 1 };
 }
 
 export const AutoLabel = Extension.create({
@@ -64,18 +59,18 @@ export const AutoLabel = Extension.create({
           newState.doc.descendants((node, pos) => {
             if (node.type.name !== labelNode.name)
               return;
+            changed = true;
             const nodeAfter = newState.doc.nodeAt(pos + node.nodeSize);
             if (nodeAfter && isInputNode(nodeAfter)) {
               tr.setNodeMarkup(pos, undefined, { inputId: nodeAfter.attrs.id, inputPos: pos + node.nodeSize });
-              changed = true;
               return;
             }
-            const leftSibling = getLeftOrRightSiblingColumnChildAtTheSameIndex(pos, 'left', newState);
-            if (leftSibling && isInputNode(leftSibling.node)) {
-              tr.setNodeMarkup(pos, undefined, { inputId: leftSibling.node.attrs.id, inputPos: leftSibling.pos });
-              changed = true;
+            const rightSibling = getLeftOrRightSiblingColumnChildAtTheSameIndex(pos, 'right', newState);
+            if (rightSibling && isInputNode(rightSibling.node)) {
+              tr.setNodeMarkup(pos, undefined, { inputId: rightSibling.node.attrs.id, inputPos: rightSibling.pos });
               return;
             }
+            tr.setNodeMarkup(pos, undefined, { inputId: null, inputPos: null });
           });
           if (changed)
             return tr;

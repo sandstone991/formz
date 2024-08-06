@@ -9,7 +9,7 @@ export const InputNode = BaseInputNode.extend({
   defining: true,
   isolating: true,
   draggable: true,
-
+  selectable: true,
   addNodeView() {
     return VueNodeViewRenderer(Component);
   },

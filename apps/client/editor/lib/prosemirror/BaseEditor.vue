@@ -56,7 +56,9 @@ provide(isProductionDependecyKey, isProduction);
 </template>
 
 <style>
+ 
   .ProseMirror {
+  --selected-background: #b3d4fc;
   padding: 10px;
   height: 100%;
   outline: none;
@@ -65,5 +67,8 @@ provide(isProductionDependecyKey, isProduction);
 }
 :has(.ProseMirror) {
   height: 100%;
+}
+.ProseMirror * ::selection {
+  background-color: var(--selected-background);
 }
 </style>

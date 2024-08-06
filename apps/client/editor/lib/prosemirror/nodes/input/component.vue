@@ -11,12 +11,13 @@ useProvideNodeProps(props);
 </script>
 
 <template>
-  <FormzNodeViewWrapper class=" w-full" data-droparea="">
+  <FormzNodeViewWrapper class=" w-full" :selectable="true" >
     <div class="input" :class="[{'w-full': isFullWidth}, {'md:w-1/2': !isFullWidth}]">
     <NodeViewContent
       as="p"
       :class="{'placeholderPlaceholder': isEmpty}"
       :data-placeholder="props.node.attrs.placeholder || 'Type placeholder here...'" 
+      
       class="inputPlaceholder"
     />
     </div>

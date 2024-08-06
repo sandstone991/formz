@@ -6,6 +6,8 @@ import {
   draggable,
   dropTargetForElements,
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
+
 import type {
   Edge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
@@ -145,6 +147,7 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
     dropTargetForElements({
       element: this.editor.view.dom,
       getIsSticky: () => true,
+
       getData: (args) => {
         let closestElement: Element | null = null;
         // search for closest element from the registry
@@ -164,7 +167,7 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
             closestElement = element;
           }
         }
-        if (args.source.element === closestElement?.parentElement)
+        if (args.source.element === closestElement)
           return { pos: -1, [uniqueKey]: null };
         if (closestElement) {
           const pos = this.editor.view.posAtDOM(closestElement, 0);
@@ -352,7 +355,7 @@ function findDropArea(element: Element) {
 function attachDragListeners(node: NodePos) {
   const dragEnabled = node.node.type.spec.draggable;
   const draggableElement = findWrapperNode(node.element);
-  const dom = findDropArea(draggableElement!) ?? node.element;
+  const dom = findDropArea(draggableElement!)!;
   const dragHandle = draggableElement!.querySelector('[data-drag-handle]') ?? undefined;
 
   if (node.node.type.name === 'column')
@@ -365,7 +368,25 @@ function attachDragListeners(node: NodePos) {
           pos: node.pos,
         }),
         dragHandle,
+        onGenerateDragPreview({ nativeSetDragImage }) {
+          setCustomNativeDragPreview(({
+            render({ container }) {
+              const preview = document.createElement('div');
 
+              const copy = draggableElement!.cloneNode(true) as Element;
+              const boundingRect = draggableElement!.getBoundingClientRect();
+              preview.style.width = `${boundingRect.width}px`;
+              preview.style.height = `${boundingRect.height}px`;
+              const dragHandle = copy.querySelector('[data-drag-handle]')?.parentElement;
+              if (dragHandle) {
+                dragHandle.remove();
+              }
+              preview.appendChild(copy);
+              container.appendChild(preview);
+            },
+            nativeSetDragImage,
+          }));
+        },
         onDragStart: () => {
           Dnd.storage.draggingState.value = {
             type: 'dragging',
