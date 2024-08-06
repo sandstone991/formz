@@ -1,4 +1,4 @@
-import type { NodePos } from '@tiptap/core';
+import type { Editor, NodePos } from '@tiptap/core';
 import { Extension } from '@tiptap/core';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import type { Input, Position } from '@atlaskit/pragmatic-drag-and-drop/types';
@@ -11,10 +11,10 @@ import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/el
 import type {
   Edge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
-import { debounce } from 'lodash-es';
+import { clamp, debounce } from 'lodash-es';
 import { Column } from './Column';
 import { ColumnBlock } from './ColumnBlock';
-import { buildColumn, buildColumnBlock } from './utils';
+import { buildColumn, buildColumnBlock, findWrapperNode } from './utils';
 import { DeleteColumnWhenEmpty } from './DeleteColumnWhenEmpty';
 import { ResizeColumns } from './ResizeColumn';
 
@@ -133,9 +133,9 @@ function rectDistance(point: Position, rect: Rect): number {
   }
 }
 
-const updateListeners = debounce((node: NodePos) => {
+const updateListeners = debounce((node: NodePos, editor: Editor) => {
   detachDragListeners();
-  recurse(node, attachDragListeners);
+  recurse(node, editor, attachDragListeners);
 }, 100);
 /**
  * @note This extension disables the default drag and drop behavior of the editor
@@ -143,7 +143,7 @@ const updateListeners = debounce((node: NodePos) => {
 export const Dnd = Extension.create<any, DndExtensionStorage>({
   name: 'dnd',
   onCreate() {
-    recurse(this.editor.$doc, attachDragListeners);
+    recurse(this.editor.$doc, this.editor, attachDragListeners);
     dropTargetForElements({
       element: this.editor.view.dom,
       getIsSticky: () => true,
@@ -314,7 +314,7 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
     });
   },
   onUpdate() {
-    updateListeners(this.editor.$doc);
+    updateListeners(this.editor.$doc, this.editor);
   },
   addStorage() {
     return {
@@ -332,27 +332,19 @@ export const Dnd = Extension.create<any, DndExtensionStorage>({
   },
 });
 function noop() {}
-function recurse(node: NodePos, fn: (node: NodePos) => void) {
+function recurse(node: NodePos, editor: Editor, fn: (node: NodePos, editor: Editor) => void) {
   if (node.node.type.name !== 'doc')
-    fn(node);
-  node.children.forEach(child => recurse(child, fn));
+    fn(node, editor);
+  node.children.forEach(child => recurse(child, editor, fn));
 }
-function findWrapperNode(element: Element) {
-  if (element.parentElement === null) {
-    return null;
-  }
-  if (element.parentElement.getAttribute('data-node-view-wrapper') !== null) {
-    return element.parentElement;
-  }
-  return findWrapperNode(element.parentElement);
-}
+
 function findDropArea(element: Element) {
   if (element.getAttribute('data-droparea') !== null) {
     return element;
   }
   return element.querySelector('[data-droparea]');
 }
-function attachDragListeners(node: NodePos) {
+function attachDragListeners(node: NodePos, editor: Editor) {
   const dragEnabled = node.node.type.spec.draggable;
   const draggableElement = findWrapperNode(node.element);
   const dom = findDropArea(draggableElement!)!;
@@ -372,16 +364,29 @@ function attachDragListeners(node: NodePos) {
           setCustomNativeDragPreview(({
             render({ container }) {
               const preview = document.createElement('div');
-
               const copy = draggableElement!.cloneNode(true) as Element;
               const boundingRect = draggableElement!.getBoundingClientRect();
-              preview.style.width = `${boundingRect.width}px`;
-              preview.style.height = `${boundingRect.height}px`;
+              const width = clamp(boundingRect.width, 100, 300);
+              const height = clamp(boundingRect.height, 100, 300);
+              preview.style.width = `${width}px`;
+              preview.style.height = `${height}px`;
               const dragHandle = copy.querySelector('[data-drag-handle]')?.parentElement;
               if (dragHandle) {
                 dragHandle.remove();
               }
               preview.appendChild(copy);
+              if (node.node.type.name === 'label' && node.attributes.inputId) {
+                const input = findWrapperNode(editor.view.domAtPos(node.attributes.inputPos + 1).node as HTMLElement);
+                if (input) {
+                  const inputClone = input.cloneNode(true) as HTMLElement;
+                  const inputBoundingRect = input.getBoundingClientRect();
+                  const width = clamp(inputBoundingRect.width, 100, 300);
+                  const height = clamp(inputBoundingRect.height, 100, 300);
+                  inputClone.style.width = `${width}px`;
+                  inputClone.style.height = `${height}px`;
+                  preview.appendChild(inputClone);
+                }
+              }
               container.appendChild(preview);
             },
             nativeSetDragImage,

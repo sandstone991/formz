@@ -2,6 +2,7 @@
 import { nodeViewProps } from '@tiptap/vue-3';
 import { clamp } from 'lodash-es';
 import { useIndex } from '../../composables';
+import { findWrapperNode } from './utils';
 
 const props = defineProps(nodeViewProps)
 const index = useIndex(props)
@@ -28,13 +29,18 @@ function findColumnBlock(node: HTMLElement) {
   if(node.hasAttribute('data-column-block')) return node
   return findColumnBlock(node.parentElement!)
 }
-
+function innerWidth(element: HTMLElement){
+  const computedStyles = window.getComputedStyle(element)
+  let elementWidth = element.clientWidth;   // width with padding
+  elementWidth -= parseFloat(computedStyles.paddingLeft) + parseFloat(computedStyles.paddingRight);
+  return elementWidth;
+}
 const resize =useThrottleFn((event: MouseEvent) => {
   if (!isResizing.value) return
   const leftSiblingNode = props.editor.$pos(leftSiblingNodePos.value)
   const currentNode = props.editor.$pos(currentPos.value)
-  const element = currentNode.element;
-  const leftSiblingElement = leftSiblingNode.element;
+  const element = findWrapperNode(currentNode.element);
+  const leftSiblingElement = findWrapperNode(leftSiblingNode.element);
   if(!element || !leftSiblingElement) return
   const parent = findColumnBlock(element)
   if(!parent) return
@@ -43,7 +49,8 @@ const resize =useThrottleFn((event: MouseEvent) => {
   const dx = event.clientX - mouseStartingPos.value
   const newWidth  = clamp(width - dx, 30, availableWidth - 30)
   const newLeftSiblingWidth = availableWidth - newWidth
-  const parentWidth = parent!.offsetWidth
+  const parentWidth = innerWidth(parent)
+
   const newLeftSiblingNodeWidthPercentage = (newLeftSiblingWidth / parentWidth) * 100
   const newCurrentWidthPercentage = (newWidth / parentWidth) * 100
   mouseStartingPos.value = event.clientX

@@ -140,3 +140,13 @@ export function isColumn(node: Node) {
 export function isColumnBlock(node: Node) {
   return node.type.name === ColumnBlock.name;
 }
+
+export function findWrapperNode(element: Element) {
+  if (element.parentElement === null) {
+    return null;
+  }
+  if (element.parentElement.getAttribute('data-node-view-wrapper') !== null) {
+    return element.parentElement;
+  }
+  return findWrapperNode(element.parentElement);
+}
