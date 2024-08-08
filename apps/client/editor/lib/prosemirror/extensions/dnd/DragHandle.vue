@@ -17,6 +17,27 @@ const insertNodeAfter = () => {
 const handleItemClassName = "w-2 h-2 p-2 hover:bg-gray-400"
 const popoverItemClassName = "flex justify-start items-center gap-2 p-1 w-full border-0"
 const isPopoverOpen = ref(false);
+const isEditing = ref(false);
+const inputValue = ref(nodeProps.node.attrs.labelText);
+const inputRef = ref<HTMLInputElement | null>(null);
+const handleBlur = () => {
+    isEditing.value = false;
+    inputValue.value = nodeProps.node.attrs.labelText;
+}
+const save = () => {
+    isEditing.value = false;
+    nodeProps.updateAttributes({
+        ...nodeProps.node.attrs,
+        labelText: inputValue.value,
+        labelTextExplicitlySet: true
+    })
+}
+const handleStartEditing = () => {
+    isEditing.value = true;
+    nextTick(() => {
+        inputRef.value?.focus();
+    })
+}
 </script>
 <template>
     <div contenteditable="false"
@@ -44,9 +65,15 @@ const isPopoverOpen = ref(false);
                             <div class="flex gap-2 text-sm font-bold items-center justify-center">
                                 <span :class="[blocksRegistry[nodeProps.node.type.name as BlockTypes].icon]"
                                     class="text-gray-600"></span>
-                                <span>{{ nodeProps.node.attrs.labelText }}</span>
+                                <span v-if="!isEditing">{{ nodeProps.node.attrs.labelText }}</span>
+                                <input ref="inputRef" v-model="inputValue" @onblur="handleBlur" v-else class="border-0 outline-none" />
                             </div>
-                            <span class="icon-[lucide--pen-line] text-gray-600"></span>
+                            <Button variant="ghost" @click="handleStartEditing" v-if="!isEditing">
+                                <span class="icon-[lucide--pen-line] text-gray-600"></span>
+                            </Button>
+                            <Button variant="ghost" @click="save" v-else>
+                                Save
+                            </Button>
                         </div>
                     </CardHeader>
                     <Separator />
