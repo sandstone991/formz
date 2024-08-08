@@ -4,9 +4,9 @@ import FormzNodeViewWrapper from '../FormzNodeViewWrapper.vue';
 import { useIsEmpty, useIsLastChild, useProvideNodeProps } from '../../composables';
 
 const props = defineProps(nodeViewProps);
+useProvideNodeProps(props);
 const isEmpty = useIsEmpty(props);
 const isLastChild = useIsLastChild(props);
-useProvideNodeProps(props);
 </script>
 
 <template>

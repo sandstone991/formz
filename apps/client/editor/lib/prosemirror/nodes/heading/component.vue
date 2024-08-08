@@ -4,10 +4,10 @@ import FormzNodeViewWrapper from '../FormzNodeViewWrapper.vue';
 import { useIsEmpty, useProvideNodeProps } from '../../composables';
 
 const props = defineProps(nodeViewProps);
+useProvideNodeProps(props);
 const isEmpty = useIsEmpty(props);
 const node = props.node;
 const level = node.attrs.level;
-useProvideNodeProps(props);
 </script>
 
 <template>

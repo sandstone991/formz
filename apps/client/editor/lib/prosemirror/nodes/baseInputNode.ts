@@ -10,6 +10,12 @@ export const BaseInputNode = Node.create({
       id: {
         default: null,
       },
+      labelText: {
+        default: 'Untitled input',
+      },
+      labelTextExplicitlySet: {
+        default: false,
+      },
     };
   },
 });

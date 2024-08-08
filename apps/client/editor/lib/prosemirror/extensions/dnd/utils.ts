@@ -3,6 +3,7 @@ import { NodeSelection, type Transaction } from '@tiptap/pm/state';
 import type { Node, ResolvedPos } from 'prosemirror-model';
 
 import { insertContentAt } from '../../transfroms/insertContentAt';
+import { inputNodes } from '../../nodes';
 import { Column } from './Column';
 import { ColumnBlock } from './ColumnBlock';
 
@@ -149,4 +150,7 @@ export function findWrapperNode(element: Element) {
     return element.parentElement;
   }
   return findWrapperNode(element.parentElement);
+}
+export function isInputNode(node: Node) {
+  return inputNodes.has(node.type.name);
 }

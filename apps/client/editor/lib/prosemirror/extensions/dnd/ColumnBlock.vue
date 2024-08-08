@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import {  NodeViewContent, nodeViewProps } from '@tiptap/vue-3';
 import FormzNodeViewWrapper from '../../nodes/FormzNodeViewWrapper.vue';
+import { useProvideNodeProps } from '../../composables';
 
-defineProps(nodeViewProps);
+const props = defineProps(nodeViewProps);
+useProvideNodeProps(props);
 
 </script>
 

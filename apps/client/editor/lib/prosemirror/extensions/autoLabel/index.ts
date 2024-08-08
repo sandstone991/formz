@@ -1,13 +1,10 @@
-import type { EditorState } from '@tiptap/pm/state';
+import type { EditorState, Transaction } from '@tiptap/pm/state';
 import { Plugin } from '@tiptap/pm/state';
-import { ChangeSet } from '@tiptap/pm/changeset';
 
-import { Extension, findChildren, findParentNodeClosestToPos } from '@tiptap/vue-3';
+import { Extension, findParentNodeClosestToPos } from '@tiptap/vue-3';
 import { flatten } from 'prosemirror-utils';
-import type { Node } from '@tiptap/pm/model';
-import { isColumnBlock } from '../dnd/utils';
+import { isColumnBlock, isInputNode } from '../dnd/utils';
 import { labelNode } from '../../nodes/label';
-import { inputNodes } from '../../nodes';
 
 function getChildIndex(childPos: number, parentPos: number, editorState: EditorState) {
   const node = editorState.doc.nodeAt(parentPos);
@@ -16,10 +13,6 @@ function getChildIndex(childPos: number, parentPos: number, editorState: EditorS
   const children = flatten(node, false).map(item => ({ node: item.node, pos: item.pos + parentPos }));
   const index = children.findIndex(child => childPos > child.pos && childPos < child.pos + child.node.nodeSize);
   return index;
-}
-
-function isInputNode(node: Node) {
-  return inputNodes.has(node.type.name);
 }
 
 function getLeftOrRightSiblingColumnChildAtTheSameIndex(nodePos: number, leftOrRight: 'left' | 'right', editorState: EditorState) {
@@ -46,33 +39,44 @@ function getLeftOrRightSiblingColumnChildAtTheSameIndex(nodePos: number, leftOrR
 
 export const AutoLabel = Extension.create({
   name: 'autoLabel',
+
   addProseMirrorPlugins() {
     return [
       new Plugin({
         appendTransaction(transactions, prevState, newState) {
           const tr = newState.tr;
+
           let changed = false;
           const shouldCheck = transactions.some((transaction) => {
             return transaction.docChanged;
           },
-          );
+          ) && !prevState.doc.eq(newState.doc);
           if (!shouldCheck)
             return;
           newState.doc.descendants((node, pos) => {
             if (node.type.name !== labelNode.name)
               return;
             changed = true;
+            let newInputId = null;
             const nodeAfter = newState.doc.nodeAt(pos + node.nodeSize);
-            if (nodeAfter && isInputNode(nodeAfter)) {
+            if (nodeAfter && isInputNode(nodeAfter) && nodeAfter.attrs.id) {
+              newInputId = nodeAfter.attrs.id;
               tr.setNodeMarkup(pos, undefined, { inputId: nodeAfter.attrs.id, inputPos: pos + node.nodeSize });
-              return;
+              if (!nodeAfter.attrs.labelTextExplicitlySet)
+                tr.setNodeAttribute(pos + node.nodeSize, 'labelText', node.textContent);
             }
-            const rightSibling = getLeftOrRightSiblingColumnChildAtTheSameIndex(pos, 'right', newState);
-            if (rightSibling && isInputNode(rightSibling.node)) {
-              tr.setNodeMarkup(pos, undefined, { inputId: rightSibling.node.attrs.id, inputPos: rightSibling.pos });
-              return;
+            if (!newInputId) {
+              const rightSibling = getLeftOrRightSiblingColumnChildAtTheSameIndex(pos, 'right', newState);
+              if (rightSibling && isInputNode(rightSibling.node) && rightSibling.node.attrs.id) {
+                newInputId = rightSibling.node.attrs.id;
+                tr.setNodeMarkup(pos, undefined, { inputId: rightSibling.node.attrs.id, inputPos: rightSibling.pos });
+                if (!rightSibling.node.attrs.labelTextExplicitlySet)
+                  tr.setNodeAttribute(rightSibling.pos, 'labelText', node.textContent);
+              }
             }
-            tr.setNodeMarkup(pos, undefined, { inputId: null, inputPos: null });
+            if (!newInputId) {
+              tr.setNodeMarkup(pos, undefined, { inputId: null, inputPos: null });
+            }
           });
 
           if (changed)

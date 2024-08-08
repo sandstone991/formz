@@ -2,10 +2,11 @@
 import { NodeViewContent, nodeViewProps } from '@tiptap/vue-3';
 import type { ColumnAttributes } from './Column';
 import ResizeHandle from './ResizeHandle.vue';
-import { useIsFirstChild } from '../../composables';
+import { useIsFirstChild, useProvideNodeProps } from '../../composables';
 import FormzNodeViewWrapper from '../../nodes/FormzNodeViewWrapper.vue';
 
 const props = defineProps(nodeViewProps);
+useProvideNodeProps(props);
 const width = computed(() => (props.node.attrs as ColumnAttributes).widthPercentage + "%");
 const isFirstChild = useIsFirstChild (props);
 

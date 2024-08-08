@@ -39,6 +39,7 @@
     "@iconify-json/grommet-icons": "^1.1.11",
     "@iconify-json/ic": "^1.1.17",
     "@iconify-json/lucide": "^1.1.204",
+    "@iconify-json/mdi": "^1.1.68",
     "@iconify-json/ph": "^1.1.13",
     "@iconify-json/radix-icons": "^1.1.14",
     "@iconify-json/twemoji": "^1.1.15",

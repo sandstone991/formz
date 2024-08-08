@@ -4,9 +4,9 @@ import FormzNodeViewWrapper from '../FormzNodeViewWrapper.vue';
 import { useIsEmpty, useProvideNodeProps } from '../../composables';
 import { isColumn } from '../../extensions/dnd/utils';
 const props = defineProps(nodeViewProps);
+useProvideNodeProps(props);
 const isEmpty = useIsEmpty(props);
 const isFullWidth = computed(()=>isColumn(props.editor.state.doc.resolve(props.getPos()).parent))
-useProvideNodeProps(props);
 
 </script>
 

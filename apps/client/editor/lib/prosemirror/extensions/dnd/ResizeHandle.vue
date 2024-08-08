@@ -7,11 +7,11 @@ import { findWrapperNode } from './utils';
 const props = defineProps(nodeViewProps)
 const index = useIndex(props)
 const prevIndex = computed(() => index.value - 1)
-const currentPos = computed(() => props.getPos() + 1)
 const leftSiblingNodePos = computed(() =>{
-  const node = props.editor.$pos(currentPos.value).parent?.children[prevIndex.value]
+  const node = props.editor.$pos(props.getPos() + 1).parent?.children[prevIndex.value]
   return node ? node.pos : -1
 })
+
 const mouseStartingPos = ref(0)
 const isResizing = ref(false)
 const startResizing = (event: MouseEvent) => {
@@ -38,7 +38,7 @@ function innerWidth(element: HTMLElement){
 const resize =useThrottleFn((event: MouseEvent) => {
   if (!isResizing.value) return
   const leftSiblingNode = props.editor.$pos(leftSiblingNodePos.value)
-  const currentNode = props.editor.$pos(currentPos.value)
+  const currentNode = props.editor.$pos(props.getPos() + 1)
   const element = findWrapperNode(currentNode.element);
   const leftSiblingElement = findWrapperNode(leftSiblingNode.element);
   if(!element || !leftSiblingElement) return
@@ -56,7 +56,7 @@ const resize =useThrottleFn((event: MouseEvent) => {
   mouseStartingPos.value = event.clientX
   const tr = props.editor.view.state.tr
   tr.setNodeMarkup(leftSiblingNodePos.value - 1, undefined, { widthPercentage: +newLeftSiblingNodeWidthPercentage.toFixed(2) })
-  tr.setNodeMarkup(currentPos.value -  1, undefined, {  widthPercentage: +newCurrentWidthPercentage.toFixed(2) })
+  tr.setNodeMarkup(props.getPos(), undefined, {  widthPercentage: +newCurrentWidthPercentage.toFixed(2) })
   props.editor.view.dispatch(tr)
 }, 50)
 

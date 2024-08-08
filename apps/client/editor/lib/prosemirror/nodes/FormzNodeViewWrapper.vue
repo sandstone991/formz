@@ -5,7 +5,7 @@ import DropIndicator from '../extensions/dnd/DropIndicator.vue';
 import { editorDependecyKey, isProductionDependecyKey } from '../provide';
 import type { DndExtensionStorage } from '../extensions/dnd';
 import { Primitive, type AsTag } from 'radix-vue';
-import { usePositionFromDom } from '../composables';
+import { useInjectNodeProps, usePositionFromDom } from '../composables';
 import { isNumber } from 'lodash-es';
 
 const props = withDefaults(defineProps<{
@@ -17,28 +17,26 @@ const props = withDefaults(defineProps<{
     dragEnabled: true,
     selectable: false,
 });
+const nodeProps = useInjectNodeProps();
 const nodeViewRef = ref<HTMLElement | null>(null);
 const isHovered = ref(false);
 const editor = inject(editorDependecyKey);
 const isProduction = inject(isProductionDependecyKey);
 const dndStorage = editor?.value?.storage.dnd as DndExtensionStorage
-const pos = usePositionFromDom(editor!, nodeViewRef)
 const isDragOver = computed(() => {
-  if(!pos) return false
+  if(!isNumber(nodeProps.getPos())) return false
   if(!dndStorage) return false
   if(dndStorage.draggingState.value.type !== "dragging") return false
-  if(dndStorage.overNode.value?.start === pos.value) return true
+  if(dndStorage.overNode.value?.start === nodeProps.getPos()) return true
   return false
 } );
-  function isWithinRange(from: number, to: number, value: number){
-    return from <= value && to >= value
-  }
+
   const isSelected = computed(()=>{
     if(!props.selectable) return false
     if(!editor?.value) return false
     const { from, to } = editor.value.state.selection;
-    if(!isNumber(pos.value))  return false
-    return isWithinRange(from, to, pos.value) || isWithinRange(from - 1, to , pos.value)
+    if(!isNumber(nodeProps.getPos()))  return false
+    return nodeProps.getPos() >= from && nodeProps.getPos() <= to
   })
 
  
@@ -58,7 +56,7 @@ const isDragOver = computed(() => {
         isHovered = true;
     }"
     @mouseleave="isHovered = false"
-    :class="{'selected': isSelected}"
+    :class="[{'selected': isSelected}, {'isHidden': nodeProps.node.attrs.hidden}]"
     data-node-view-wrapper=""
      class="relative p-1" >
     <DragHandle v-if="dragEnabled && !isProduction" :is-hovered="isHovered" />
@@ -71,5 +69,8 @@ const isDragOver = computed(() => {
 <style scoped>
   .selected{
     background-color: var(--selected-background);
+  }
+  .isHidden{
+    opacity: 0.3;
   }
 </style>
