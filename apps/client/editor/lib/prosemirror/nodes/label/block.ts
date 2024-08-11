@@ -1,6 +1,6 @@
-import type { QuickMenuBlock } from '~/editor/lib/interface';
+import type { FormBlockConfig } from '~/editor/lib/interface';
 
-export const labelBlock: QuickMenuBlock = {
+export const labelBlock: FormBlockConfig = {
   nodeType: 'label',
   title: 'Label',
   icon: 'icon-[ic--outline-label]',

@@ -16,6 +16,12 @@ export const BaseInputNode = Node.create({
       labelTextExplicitlySet: {
         default: false,
       },
+      defaultAnswerEnabled: {
+        default: false,
+      },
+      defaultAnswer: {
+        default: '',
+      },
     };
   },
 });

@@ -6,7 +6,7 @@ import { isInputNode } from './utils';
 import { CardContent, CardTitle, CardHeader, Card } from '~/components/ui/card';
 import { Separator } from '@/components/ui/separator'
 import { blocksRegistry, type BlockTypes } from '../../nodes';
-
+import Form from '~/editor/lib/form/Form.vue';
 defineProps<{ isHovered: boolean }>();
 const nodeProps = useInjectNodeProps();
 const insertNodeAfter = () => {
@@ -78,6 +78,7 @@ const handleStartEditing = () => {
                     </CardHeader>
                     <Separator />
                     <CardContent class="p-2 px-3">
+                        <Form v-if="blocksRegistry[nodeProps.node.type.name as BlockTypes].form !== undefined" :config="blocksRegistry[nodeProps.node.type.name as BlockTypes].form!" />
                         <Button variant="outline" :class="popoverItemClassName">
                             <span class="icon-[ph--trash]"></span>
                             <span>

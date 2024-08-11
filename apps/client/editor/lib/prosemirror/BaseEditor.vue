@@ -8,6 +8,8 @@ import { AutoLabel } from './extensions/autoLabel';
 import { Dnd } from './extensions/dnd';
 import { UniqueID } from './extensions/uniqueId';
 import { HiddenBlocks } from './extensions/hidden';
+
+
 const editor = useEditor({
   content: `
     <h2>
