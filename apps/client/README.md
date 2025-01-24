@@ -10,7 +10,11 @@
 <br>
 <a href="https://vitesse-nuxt3.netlify.app/">🖥 Online Preview</a>
 <br><br>
-<a href="https://stackblitz.com/github/antfu/vitesse-nuxt3"><img src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" alt=""></a>
+<a href="https://app.codeanywhere.com/#https://github.com/antfu/vitesse-nuxt3"><img src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" alt=""></a>
+
+<a href="https://stackblitz.com/github/antfu/vitesse-nuxt3"><img src="https://codeanywhere.com/img/open-in-codeanywhere-btn.svg" alt=""></a>
+[![Open in Codeanywhere](https://codeanywhere.com/img/open-in-codeanywhere-btn.svg)](gutentag2012/form-signals)
+
 </p>
 
 ## Features
@@ -64,6 +68,9 @@ We recommend using [VS Code](https://code.visualstudio.com/) with [Volar](https:
 ### Online
 
 <a href="https://stackblitz.com/github/antfu/vitesse-nuxt3"><img src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" alt=""></a>
+  <a href="https://app.codeanywhere.com/#https://github.com/sandstone991/formz">
+    <img alt="Open in Codeanywhere" src="https://codeanywhere.com/img/open-in-codeanywhere-btn.svg" />
+  </a>
 
 ### GitHub Template
 
